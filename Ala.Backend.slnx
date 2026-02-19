@@ -1,1 +1,14 @@
-<Solution />
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Core/">
+    <Project Path="src/Core/Ala.Backend.Application/Ala.Backend.Application.csproj" Id="7da5e4fa-4f86-4334-9ee2-37857ddf9e97" />
+    <Project Path="src/Core/Ala.Backend.Domain/Ala.Backend.Domain.csproj" Id="c3f2af1a-b6ed-412b-8ee7-7f62dd5f9827" />
+  </Folder>
+  <Folder Name="/src/Infrastructure/">
+    <Project Path="src/Infrastructure/Ala.Backend.Infrastructure/Ala.Backend.Infrastructure.csproj" Id="6e435139-1362-420d-9d8e-d2e1faa0aad9" />
+    <Project Path="src/Infrastructure/Ala.Backend.Persistence/Ala.Backend.Persistence.csproj" Id="7b50115d-c156-4ede-bea6-578c4aa8ce62" />
+  </Folder>
+  <Folder Name="/src/Presentation/">
+    <Project Path="src/Presentation/Ala.Backend.WebAPI/Ala.Backend.WebAPI.csproj" Id="a7c7429d-e6d2-48e5-9b04-5397e416d19b" />
+  </Folder>
+</Solution>

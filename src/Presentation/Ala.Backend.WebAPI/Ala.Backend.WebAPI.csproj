@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Controllers\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Ala.Backend.Application\Ala.Backend.Application.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Ala.Backend.Infrastructure\Ala.Backend.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Ala.Backend.Persistence\Ala.Backend.Persistence.csproj" />
+  </ItemGroup>
+
+</Project>

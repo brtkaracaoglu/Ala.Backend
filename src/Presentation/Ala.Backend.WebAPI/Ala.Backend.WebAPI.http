@@ -1,0 +1,6 @@
+@Ala.Backend.WebAPI_HostAddress = http://localhost:5134
+
+GET {{Ala.Backend.WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
