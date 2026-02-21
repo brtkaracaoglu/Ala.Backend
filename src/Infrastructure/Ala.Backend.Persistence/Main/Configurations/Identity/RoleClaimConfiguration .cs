@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Ala.Backend.Persistence.Configurations.Identity
+namespace Ala.Backend.Persistence.Main.Configurations.Identity
 {
     public class RoleClaimConfiguration : IEntityTypeConfiguration<RoleClaim>
     {
