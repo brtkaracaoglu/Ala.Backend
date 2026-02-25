@@ -1,23 +1,13 @@
 ﻿using Ala.Backend.Domain.Identity;
+using Ala.Backend.Persistence.Extensions;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace Ala.Backend.Persistence.Main.Context
 {
-    public class MainDbContext
-     : IdentityDbContext<
-         User,
-         Role,
-         int,
-         UserClaim,
-         UserRole,
-         UserLogin,
-         RoleClaim,
-         UserToken>
+    public class MainDbContext : IdentityDbContext<User,Role,int,UserClaim,UserRole,UserLogin,RoleClaim,UserToken>
     {
-        public MainDbContext(DbContextOptions<MainDbContext> options)
-            : base(options)
+        public MainDbContext(DbContextOptions<MainDbContext> options) : base(options)
         {
         }
 
@@ -27,6 +17,8 @@ namespace Ala.Backend.Persistence.Main.Context
 
             builder.ApplyConfigurationsFromAssembly(
                 typeof(MainDbContext).Assembly);
+
+            builder.ApplySoftDeleteQueryFilter();
         }
     }
 }

@@ -1,12 +1,17 @@
+using Ala.Backend.Infrastructure;
 using Ala.Backend.Persistence;
+using Ala.Backend.WebAPI;
+using Ala.Backend.Application;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
-
+builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddPersistenceServices(builder.Configuration);
+builder.Services.AddPresentationServices(builder.Configuration);
 
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
@@ -22,7 +27,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthentication();  //  Identity için zorunlu
-app.UseAuthorization();
 app.UseAuthorization();
 
 app.MapControllers();
