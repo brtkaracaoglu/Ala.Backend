@@ -1,7 +1,8 @@
+using Ala.Backend.Application;
 using Ala.Backend.Infrastructure;
 using Ala.Backend.Persistence;
 using Ala.Backend.WebAPI;
-using Ala.Backend.Application;
+using Ala.Backend.WebAPI.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +25,9 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-
+app.UseHttpsRedirection();
+app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();  //  Identity için zorunlu
 app.UseAuthorization();

@@ -1,16 +1,17 @@
-﻿using System.Linq.Expressions;
-using Ala.Backend.Application.Abstractions.Persistence;
+﻿using Ala.Backend.Application.Abstractions.Persistence;
 using Ala.Backend.Domain.Common;
+using Ala.Backend.Persistence.Main.Context;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Ala.Backend.Persistence.Repositories
 {
     public class EfReadRepository<TEntity, TId> : IReadRepository<TEntity, TId> where TEntity : BaseEntity<TId> where TId : notnull
     {
-        protected readonly DbContext _context;
+        protected readonly MainDbContext _context;
         protected readonly DbSet<TEntity> _dbSet;
 
-        public EfReadRepository(DbContext context)
+        public EfReadRepository(MainDbContext context)
         {
             _context = context;
             _dbSet = context.Set<TEntity>();
@@ -18,62 +19,28 @@ namespace Ala.Backend.Persistence.Repositories
 
         public async Task<TEntity?> GetByIdAsync(TId id, CancellationToken cancellationToken = default)
         {
-            return await _dbSet
-                .AsNoTracking()
-                .FirstOrDefaultAsync(
-                    x => x.Id.Equals(id),
-                    cancellationToken);
+            return await _dbSet.AsNoTracking().FirstOrDefaultAsync(x => x.Id.Equals(id), cancellationToken);
         }
 
-        public async Task<IReadOnlyList<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate,
-            CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
-            return await _dbSet
-                .AsNoTracking()
-                .Where(predicate)
-                .ToListAsync(cancellationToken);
+            return await _dbSet.AsNoTracking().Where(predicate).ToListAsync(cancellationToken);
         }
 
         public async Task<IReadOnlyList<TResult>> SelectAsync<TResult>(Expression<Func<TEntity, bool>> predicate,
-            Expression<Func<TEntity, TResult>> selector,
-            CancellationToken cancellationToken = default)
+            Expression<Func<TEntity, TResult>> selector, CancellationToken cancellationToken = default)
         {
-            return await _dbSet
-                .AsNoTracking()
-                .Where(predicate)
-                .Select(selector)
-                .ToListAsync(cancellationToken);
+            return await _dbSet.AsNoTracking().Where(predicate).Select(selector).ToListAsync(cancellationToken);
         }
 
-        public async Task<(IReadOnlyList<TEntity> Items, int TotalCount)> GetPagedAsync(
-            Expression<Func<TEntity, bool>>? predicate,
-            int pageNumber,
-            int pageSize,
-            CancellationToken cancellationToken = default)
+        public async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
-            if (pageNumber <= 0)
-                throw new ArgumentException("Page number must be greater than 0.");
+            return await _dbSet.FirstOrDefaultAsync(predicate, cancellationToken);
+        }
 
-            if (pageSize <= 0)
-                throw new ArgumentException("Page size must be greater than 0.");
-
-            IQueryable<TEntity> query = _dbSet.AsNoTracking();
-
-            if (predicate != null)
-            {
-                query = query.Where(predicate);
-            }
-
-            query = query.OrderBy(x => x.Id);
-
-            var totalCount = await query.CountAsync(cancellationToken);
-
-            var items = await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync(cancellationToken);
-
-            return (items, totalCount);
+        public async Task<IReadOnlyList<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        {
+            return await _dbSet.Where(predicate).ToListAsync(cancellationToken);
         }
 
         public IQueryable<TEntity> Query()

@@ -1,5 +1,4 @@
-﻿
-using Ala.Backend.Application.Abstractions.Presentation;
+﻿using Ala.Backend.Application.Abstractions.Presentation;
 using System.Security.Claims;
 
 namespace Ala.Backend.WebAPI.RequestContext

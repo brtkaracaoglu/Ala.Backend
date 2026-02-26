@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Ala.Backend.Application.Common.Behaviors;
+using FluentValidation;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Ala.Backend.Application;
 
@@ -12,6 +15,9 @@ public static class ApplicationServiceRegistration
         {
             cfg.RegisterServicesFromAssembly(assembly);
         });
+
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        services.AddValidatorsFromAssembly(assembly);
 
         return services;
     }

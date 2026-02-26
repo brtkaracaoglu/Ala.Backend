@@ -12,9 +12,6 @@ namespace Ala.Backend.Domain.Common
 
         public void SetCreated(int? userId, DateTime createdAtUtc)
         {
-            if (CreatedAtUtc != default)
-                throw new InvalidOperationException("Created information already set.");
-
             CreatedBy = userId;
             CreatedAtUtc = createdAtUtc;
         }

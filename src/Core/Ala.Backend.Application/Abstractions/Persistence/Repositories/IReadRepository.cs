@@ -8,19 +8,16 @@ namespace Ala.Backend.Application.Abstractions.Persistence
 
         Task<TEntity?> GetByIdAsync(TId id, CancellationToken cancellationToken = default);
 
-        Task<IReadOnlyList<TEntity>> FindAsync(
-            Expression<Func<TEntity, bool>> predicate,
+        Task<IReadOnlyList<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate,
             CancellationToken cancellationToken = default);
 
-        Task<IReadOnlyList<TResult>> SelectAsync<TResult>(
-            Expression<Func<TEntity, bool>> predicate,
-            Expression<Func<TEntity, TResult>> selector,
+        Task<IReadOnlyList<TResult>> SelectAsync<TResult>(Expression<Func<TEntity, bool>> predicate,Expression<Func<TEntity, TResult>> selector,
             CancellationToken cancellationToken = default);
 
-        Task<(IReadOnlyList<TEntity> Items, int TotalCount)> GetPagedAsync(
-            Expression<Func<TEntity, bool>>? predicate,
-            int pageNumber,
-            int pageSize,
+        Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate,
+            CancellationToken cancellationToken = default);
+
+        Task<IReadOnlyList<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate,
             CancellationToken cancellationToken = default);
 
         IQueryable<TEntity> Query();
