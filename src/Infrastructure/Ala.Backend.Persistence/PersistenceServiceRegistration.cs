@@ -18,9 +18,6 @@ namespace Ala.Backend.Persistence
             // Identity
             services.AddIdentityConfiguration();
 
-            // Interceptor
-            services.AddScoped<AuditDomainEventInterceptor>();
-
             // Repositories
             services.AddScoped(typeof(IReadRepository<,>), typeof(EfReadRepository<,>));
             services.AddScoped(typeof(IWriteRepository<,>), typeof(EfWriteRepository<,>));

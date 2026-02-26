@@ -10,11 +10,11 @@ namespace Ala.Backend.Persistence.Main
     {
         public static IServiceCollection AddPostgreSql(this IServiceCollection services, IConfiguration configuration)
         {
-            var connectionString =
-                configuration.GetConnectionString("PostgreSQL");
+            var connectionString = configuration.GetConnectionString("PostgreSQL");
 
-            // Interceptor DI kaydı
-            services.AddScoped<AuditDomainEventInterceptor>();
+            //Interceptor'ların DI Kaydı
+            services.AddScoped<AuditTrackableInterceptor>();
+            services.AddScoped<PublishDomainEventsInterceptor>();
 
             services.AddDbContext<MainDbContext>((sp, options) =>
             {
@@ -29,16 +29,15 @@ namespace Ala.Backend.Persistence.Main
                         errorCodesToAdd: null);
                 });
 
-                // Interceptor ekleniyor
+                // Not: EF Core ekleme sırasına göre çalıştırır.
                 options.AddInterceptors(
-                    sp.GetRequiredService<AuditDomainEventInterceptor>());
+                    sp.GetRequiredService<AuditTrackableInterceptor>(),
+                    sp.GetRequiredService<PublishDomainEventsInterceptor>());
 
-                // Logging
                 options.EnableDetailedErrors();
 
-                  //debug
+                // Sadece Development ortamında açılması önerilir
                 options.EnableSensitiveDataLogging();
-
             });
 
             return services;
