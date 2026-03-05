@@ -2,9 +2,14 @@ using Ala.Backend.Application;
 using Ala.Backend.Infrastructure;
 using Ala.Backend.Persistence;
 using Ala.Backend.WebAPI;
+using Ala.Backend.WebAPI.Extensions;
 using Ala.Backend.WebAPI.Middlewares;
+using Scalar.AspNetCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.AddSerilogConfiguration();
 
 // Add services to the container.
 
@@ -19,17 +24,21 @@ builder.Services.AddAuthorization();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
-
+app.UseSerilogRequestLogging();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    // Scalar arayüzünü aktif eder
+    app.MapScalarApiReference();
 }
-app.UseHttpsRedirection();
-app.UseMiddleware<CorrelationIdMiddleware>();
+
+
 app.UseMiddleware<GlobalExceptionMiddleware>();
+app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseHttpsRedirection();
-app.UseAuthentication();  //  Identity için zorunlu
+
+app.UseAuthentication();  
 app.UseAuthorization();
 
 app.MapControllers();

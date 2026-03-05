@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ala.Backend.Persistence.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    [Migration("20260225124945_Init")]
-    partial class Init
+    [Migration("20260305102324_maindb")]
+    partial class maindb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

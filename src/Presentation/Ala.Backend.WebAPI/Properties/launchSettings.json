@@ -4,8 +4,9 @@
     "http": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": false,
-      "applicationUrl": "http://localhost:5134",
+      "launchBrowser": true,
+      "launchUrl": "scalar/v1", // Burayı güncelledik
+      "applicationUrl": "http://localhost:5124",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
@@ -13,8 +14,9 @@
     "https": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": false,
-      "applicationUrl": "https://localhost:7231;http://localhost:5134",
+      "launchBrowser": true,
+      "launchUrl": "scalar/v1", // Burayı güncelledik
+      "applicationUrl": "https://localhost:7124;http://localhost:5124",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

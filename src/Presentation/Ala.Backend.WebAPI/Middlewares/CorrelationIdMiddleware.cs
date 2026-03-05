@@ -20,10 +20,10 @@
             context.Items["CorrelationId"] = correlationId;
             context.Response.Headers[HeaderName] = correlationId;
 
-            //using (Serilog.Context.LogContext.PushProperty("CorrelationId", correlationId))
-            //{
-            //    await _next(context);
-            //}
+            using (Serilog.Context.LogContext.PushProperty("CorrelationId", correlationId))
+            {
+                await _next(context);
+            }
         }
     }
 
