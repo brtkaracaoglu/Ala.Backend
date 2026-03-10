@@ -1,6 +1,8 @@
 ﻿using Ala.Backend.Application.Abstractions.Persistence;
+using Ala.Backend.Application.Abstractions.Persistence.Repositories;
 using Ala.Backend.Persistence.Interceptors;
 using Ala.Backend.Persistence.Main;
+using Ala.Backend.Persistence.Main.Repositories;
 using Ala.Backend.Persistence.Repositories;
 using Ala.Backend.Persistence.UnitOfWork;
 using Microsoft.Extensions.Configuration;
@@ -21,6 +23,7 @@ namespace Ala.Backend.Persistence
             // Sadece UoW kaydı yeterli, repository'leri UoW içinde oluşturuyoruz
             services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
+            services.AddScoped<IUserRepository, UserRepository>();
             return services;
         }
     }

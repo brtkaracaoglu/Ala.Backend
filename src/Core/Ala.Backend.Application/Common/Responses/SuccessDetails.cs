@@ -5,7 +5,7 @@ namespace Ala.Backend.Application.Common.Responses
     public class SuccessDetails
     {
         [JsonPropertyName("type")]
-        public string Type { get; set; } = "https://euro-scada.com/success";
+        public string Type { get; set; } = "https://ala-backend.com/success";
 
         [JsonPropertyName("title")]
         public string Title { get; set; } = "Success";
