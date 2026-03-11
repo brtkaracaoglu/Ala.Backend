@@ -1,5 +1,8 @@
 ﻿using Ala.Backend.Application.Features.Commands.Users.CreateUser;
 using Ala.Backend.Application.Features.Commands.Users.DeleteUser;
+using Ala.Backend.Application.Features.Commands.Users.LockUser;
+using Ala.Backend.Application.Features.Commands.Users.SetActiveUser;
+using Ala.Backend.Application.Features.Commands.Users.UnlockUser;
 using Ala.Backend.Application.Features.Commands.Users.UpdateUser;
 using Ala.Backend.Application.Features.Queries.Users.GetAllUsers;
 using Ala.Backend.Application.Features.Queries.Users.GetUserById;
@@ -11,7 +14,6 @@ namespace Ala.Backend.WebAPI.Controllers.User
     [Route("api/[controller]")]
     [ApiController]
     [Tags("Users")]
-
     public class UsersController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -21,28 +23,20 @@ namespace Ala.Backend.WebAPI.Controllers.User
             _mediator = mediator;
         }
 
-        // POST: api/users
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateUserCommandRequest request)
         {
-            var response = await _mediator.Send(request);
-
-            // ResultResponse.Created metodu Status = 201 döndüğü için, 
-            // StatusCode metodu HTTP 201 Created yanıtı üretecektir.
+            var response = await _mediator.Send(request);       
             return StatusCode(response.Status, response);
         }
 
-        // GET: api/users
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var response = await _mediator.Send(new GetAllUsersQueryRequest());
-
-            // HTTP 200 OK
             return StatusCode(response.Status, response);
         }
 
-        // GET: api/users/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
@@ -52,23 +46,47 @@ namespace Ala.Backend.WebAPI.Controllers.User
             return StatusCode(response.Status, response);
         }
 
-        // PUT: api/users/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateUserCommandRequest request)
         {
-            // Güvenlik: URL'den gelen ID'yi, Request Body'den gelen ID'nin üzerine yazıyoruz
-            // Böylece istemci URL'de başka, Body'de başka ID gönderemez.
             request.Id = id;
             var response = await _mediator.Send(request);
 
             return StatusCode(response.Status, response);
         }
 
-        // DELETE: api/users/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             var request = new DeleteUserCommandRequest { Id = id };
+            var response = await _mediator.Send(request);
+
+            return StatusCode(response.Status, response);
+        }
+
+
+        [HttpPost("{id}/lock")]
+        public async Task<IActionResult> LockUser([FromRoute] int id, [FromBody] LockUserCommandRequest request)
+        {
+            request.Id = id;
+            var response = await _mediator.Send(request);
+
+            return StatusCode(response.Status, response);
+        }
+
+        [HttpPost("{id}/unlock")]
+        public async Task<IActionResult> UnlockUser([FromRoute] int id)
+        {
+            var request = new UnlockUserCommandRequest { Id = id };
+            var response = await _mediator.Send(request);
+
+            return StatusCode(response.Status, response);
+        }
+
+        [HttpPut("{id}/active-status")]
+        public async Task<IActionResult> SetActiveStatus([FromRoute] int id, [FromBody] SetActiveUserCommandRequest request)
+        {
+            request.Id = id;
             var response = await _mediator.Send(request);
 
             return StatusCode(response.Status, response);

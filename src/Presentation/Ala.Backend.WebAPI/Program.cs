@@ -26,12 +26,15 @@ builder.Services.AddOpenApi();
 var app = builder.Build();
 app.UseSerilogRequestLogging();
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.MapOpenApi(); // Arka planda OpenAPI JSON dosyasýný üretir
+
+app.MapScalarApiReference(options =>
 {
-    app.MapOpenApi();
-    // Scalar arayüzünü aktif eder
-    app.MapScalarApiReference();
-}
+    options.WithTitle("Ala Backend API")
+           .WithTheme(ScalarTheme.BluePlanet) // Purple temasý varsayýlan olarak açýk býrakýldý
+           .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+});
+
 
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
