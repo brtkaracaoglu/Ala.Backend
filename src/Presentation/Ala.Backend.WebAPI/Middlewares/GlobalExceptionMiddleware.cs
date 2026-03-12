@@ -62,11 +62,10 @@ namespace Ala.Backend.WebAPI.Middlewares
 
             if (ex is BusinessRuleException busEx && !string.IsNullOrEmpty(busEx.PropertyName))
             {
-                pd.Extensions["errors"] = new Dictionary<string, string[]> { { busEx.PropertyName, new[] { ex.Detail } } };
-            }
-            else if (ex.Errors?.Any() == true)
-            {
-                pd.Extensions["errors"] = new Dictionary<string, IEnumerable<string>> { { "General", ex.Errors } };
+                pd.Extensions["errors"] = new Dictionary<string, string[]>
+        {
+            { busEx.PropertyName, new[] { ex.Detail } }
+        };
             }
 
             return pd;
@@ -114,6 +113,7 @@ namespace Ala.Backend.WebAPI.Middlewares
             // TraceId olarak öncelikle bizim correlationId'mizi, yoksa sistemin TraceIdentifier'ını kullanıyoruz.
             pd.Extensions["traceId"] = correlationId ?? context.TraceIdentifier;
             pd.Extensions["method"] = context.Request.Method;
+            pd.Extensions["timestamp"] = DateTime.UtcNow;
         }
 
 

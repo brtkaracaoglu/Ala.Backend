@@ -38,6 +38,10 @@ namespace Ala.Backend.Infrastructure.Services.Identity
         {
             return await _userManager.GetClaimsAsync(user);
         }
+        public async Task<IList<User>> GetUsersInRoleAsync(string roleName)
+        {
+            return await _userManager.GetUsersInRoleAsync(roleName);
+        }
 
         public async Task<bool> IsInRoleAsync(User user, string roleName)
         {

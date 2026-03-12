@@ -11,11 +11,8 @@ namespace Ala.Backend.Application.Common.Exceptions
         public string? Instance { get; set; }
         public string? CorrelationId { get; set; }
 
-        // Genel hatalar için liste (Validation hariç)
-        public IEnumerable<string>? Errors { get; protected set; }
 
-        protected AppException(string title, string detail, int status, string typeUri)
-            : base(detail)
+        protected AppException(string title, string detail, int status, string typeUri, Exception? innerException = null) : base(detail, innerException)
         {
             Title = title;
             Status = status;

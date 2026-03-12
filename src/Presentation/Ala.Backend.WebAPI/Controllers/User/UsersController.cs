@@ -23,18 +23,11 @@ namespace Ala.Backend.WebAPI.Controllers.User
             _mediator = mediator;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateUserCommandRequest request)
-        {
-            var response = await _mediator.Send(request);       
-            return StatusCode(response.Status, response);
-        }
-
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var response = await _mediator.Send(new GetAllUsersQueryRequest());
-            return StatusCode(response.Status, response);
+            return Ok(response);
         }
 
         [HttpGet("{id}")]
@@ -43,25 +36,32 @@ namespace Ala.Backend.WebAPI.Controllers.User
             var request = new GetUserByIdQueryRequest { Id = id };
             var response = await _mediator.Send(request);
 
-            return StatusCode(response.Status, response);
+            return Ok(response);
         }
 
-        [HttpPut("{id}")]
+        [HttpPost("create")]
+        public async Task<IActionResult> Create([FromBody] CreateUserCommandRequest request)
+        {
+            var response = await _mediator.Send(request);       
+            return Ok(response);
+        }
+
+        [HttpPut("{id}/update")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateUserCommandRequest request)
         {
             request.Id = id;
             var response = await _mediator.Send(request);
 
-            return StatusCode(response.Status, response);
+            return Ok(response);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}/delete")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             var request = new DeleteUserCommandRequest { Id = id };
             var response = await _mediator.Send(request);
 
-            return StatusCode(response.Status, response);
+            return Ok(response);
         }
 
 
@@ -71,7 +71,7 @@ namespace Ala.Backend.WebAPI.Controllers.User
             request.Id = id;
             var response = await _mediator.Send(request);
 
-            return StatusCode(response.Status, response);
+            return Ok(response);
         }
 
         [HttpPost("{id}/unlock")]
@@ -80,7 +80,7 @@ namespace Ala.Backend.WebAPI.Controllers.User
             var request = new UnlockUserCommandRequest { Id = id };
             var response = await _mediator.Send(request);
 
-            return StatusCode(response.Status, response);
+            return Ok(response);
         }
 
         [HttpPut("{id}/active-status")]
@@ -89,7 +89,7 @@ namespace Ala.Backend.WebAPI.Controllers.User
             request.Id = id;
             var response = await _mediator.Send(request);
 
-            return StatusCode(response.Status, response);
+            return Ok(response);
         }
     }
 }
