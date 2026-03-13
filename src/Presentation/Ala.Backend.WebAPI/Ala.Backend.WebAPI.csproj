@@ -27,8 +27,4 @@
     <ProjectReference Include="..\..\Infrastructure\Ala.Backend.Persistence\Ala.Backend.Persistence.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Logs\" />
-  </ItemGroup>
-
 </Project>

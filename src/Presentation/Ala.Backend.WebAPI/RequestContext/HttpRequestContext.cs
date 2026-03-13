@@ -14,6 +14,7 @@ namespace Ala.Backend.WebAPI.RequestContext
 
         public string CorrelationId =>
             _http.HttpContext?.Items["CorrelationId"]?.ToString()
+            ?? _http.HttpContext?.TraceIdentifier
             ?? Guid.NewGuid().ToString();
 
         public int? UserId =>
@@ -31,6 +32,6 @@ namespace Ala.Backend.WebAPI.RequestContext
             ?? "127.0.0.1";
 
         public string? UserAgent =>
-            _http.HttpContext?.Request?.Headers["User-Agent"];
+            _http.HttpContext?.Request?.Headers["User-Agent"].ToString();
     }
 }

@@ -5,6 +5,6 @@ namespace Ala.Backend.Application.Features.Commands.Roles.CreateRole
 {
     public class CreateRoleCommandRequest : IRequest<SuccessDetails<int>>
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
     }
 }

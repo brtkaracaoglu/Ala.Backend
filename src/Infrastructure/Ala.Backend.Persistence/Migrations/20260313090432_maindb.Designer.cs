@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ala.Backend.Persistence.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    [Migration("20260305102324_maindb")]
+    [Migration("20260313090432_maindb")]
     partial class maindb
     {
         /// <inheritdoc />
@@ -264,17 +264,21 @@ namespace Ala.Backend.Persistence.Migrations
 
             modelBuilder.Entity("Ala.Backend.Domain.Identity.UserRole", b =>
                 {
-                    b.HasOne("Ala.Backend.Domain.Identity.Role", null)
-                        .WithMany()
+                    b.HasOne("Ala.Backend.Domain.Identity.Role", "Role")
+                        .WithMany("UserRoles")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Ala.Backend.Domain.Identity.User", null)
-                        .WithMany()
+                    b.HasOne("Ala.Backend.Domain.Identity.User", "User")
+                        .WithMany("UserRoles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Role");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Ala.Backend.Domain.Identity.UserToken", b =>
@@ -284,6 +288,16 @@ namespace Ala.Backend.Persistence.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Ala.Backend.Domain.Identity.Role", b =>
+                {
+                    b.Navigation("UserRoles");
+                });
+
+            modelBuilder.Entity("Ala.Backend.Domain.Identity.User", b =>
+                {
+                    b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618
         }

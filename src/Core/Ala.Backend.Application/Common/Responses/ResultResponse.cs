@@ -8,7 +8,7 @@ namespace Ala.Backend.Application.Common.Responses
         {
             return new SuccessDetails
             {
-                Status = 200,
+                StatusCode = 200,
                 Detail = messageKey
             };
         }
@@ -18,7 +18,7 @@ namespace Ala.Backend.Application.Common.Responses
         {
             return new SuccessDetails<T>
             {
-                Status = 200,
+                StatusCode = 200,
                 Detail = messageKey,
                 Data = data
             };
@@ -29,7 +29,7 @@ namespace Ala.Backend.Application.Common.Responses
         {
             return new SuccessDetails<T>
             {
-                Status = 201,
+                StatusCode = 201,
                 Detail = messageKey,
                 Data = data
             };

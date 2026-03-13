@@ -1,4 +1,4 @@
-﻿using Ala.Backend.Application.Abstractions.Persistence.Repositories;
+﻿using Ala.Backend.Application.Abstractions.Persistence.Repositories.Identity;
 using Ala.Backend.Application.Common.Responses;
 using Ala.Backend.Application.DTOs.Users;
 using Ala.Backend.Application.SystemMessages;
@@ -26,7 +26,8 @@ namespace Ala.Backend.Application.Features.Queries.Users.GetAllUsers
                 Email = u.Email!,
                 FirstName = u.FirstName,
                 LastName = u.LastName,
-                IsActive = u.IsActive
+                IsActive = u.IsActive,
+                Roles = u.UserRoles.Select(ur => ur.Role.Name!).ToList()
             }).ToList();
 
             return ResultResponse.Success(userDtos, Response.Common.OperationSuccess);

@@ -1,6 +1,6 @@
 ﻿namespace Ala.Backend.WebAPI.Middlewares
 {
-    public class CorrelationIdMiddleware
+    public sealed class CorrelationIdMiddleware
     {
         private const string HeaderName = "X-Correlation-Id";
         private readonly RequestDelegate _next;
@@ -12,12 +12,13 @@
 
         public async Task InvokeAsync(HttpContext context)
         {
-            var correlationId =
-                context.Request.Headers.TryGetValue(HeaderName, out var value)
-                    ? value.ToString()
-                    : Guid.NewGuid().ToString();
+            var correlationId = context.Request.Headers.TryGetValue(HeaderName, out var value)
+                && !string.IsNullOrWhiteSpace(value)
+                ? value.ToString()
+                : Guid.NewGuid().ToString();
 
             context.Items["CorrelationId"] = correlationId;
+
             context.Response.Headers[HeaderName] = correlationId;
 
             using (Serilog.Context.LogContext.PushProperty("CorrelationId", correlationId))
@@ -26,5 +27,4 @@
             }
         }
     }
-
 }

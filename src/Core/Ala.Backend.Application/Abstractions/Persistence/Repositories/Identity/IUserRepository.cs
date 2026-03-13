@@ -1,6 +1,6 @@
 ﻿using Ala.Backend.Domain.Identity;
 
-namespace Ala.Backend.Application.Abstractions.Persistence.Repositories
+namespace Ala.Backend.Application.Abstractions.Persistence.Repositories.Identity
 {
     public interface IUserRepository
     {

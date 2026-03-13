@@ -1,9 +1,9 @@
-﻿using Ala.Backend.Application.Abstractions.Persistence.Repositories;
+﻿using Ala.Backend.Application.Abstractions.Persistence.Repositories.Identity;
 using Ala.Backend.Domain.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace Ala.Backend.Persistence.Main.Repositories
+namespace Ala.Backend.Persistence.Main.Repositories.Identity
 {
     public class UserRepository : IUserRepository
     {
@@ -17,8 +17,10 @@ namespace Ala.Backend.Persistence.Main.Repositories
         public async Task<IList<User>> GetAllUsersAsync(CancellationToken cancellationToken = default)
         {
             return await _userManager.Users
-                                     .AsNoTracking()
-                                     .ToListAsync(cancellationToken);
+                .Include(u => u.UserRoles)    
+                .ThenInclude(ur => ur.Role)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
         }
     }
 }

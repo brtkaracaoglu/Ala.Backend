@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using System.Text.RegularExpressions;
 
 namespace Ala.Backend.Application.Features.Commands.Roles.CreateRole
 {

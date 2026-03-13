@@ -9,11 +9,12 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Serilog Configuration
 builder.Host.AddSerilogConfiguration();
 
-// Add services to the container.
-
+// Services
 builder.Services.AddControllers();
+
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddPersistenceServices(builder.Configuration);
@@ -21,29 +22,44 @@ builder.Services.AddPresentationServices(builder.Configuration);
 
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
+
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
-app.UseSerilogRequestLogging();
-// Configure the HTTP request pipeline.
-app.MapOpenApi(); // Arka planda OpenAPI JSON dosyasýný üretir
 
+//
+// MIDDLEWARE PIPELINE
+//
+
+// CorrelationId üretimi (tüm request boyunca kullanýlacak)
+app.UseMiddleware<CorrelationIdMiddleware>();
+
+// HTTP request logging (Serilog)
+app.UseSerilogRequestLogging();
+
+// Global exception handling
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
+// HTTPS redirect
+app.UseHttpsRedirection();
+
+// Authentication & Authorization
+app.UseAuthentication();
+app.UseAuthorization();
+
+
+// OpenAPI JSON
+app.MapOpenApi();
+
+// Scalar API UI
 app.MapScalarApiReference(options =>
 {
     options.WithTitle("Ala Backend API")
-           .WithTheme(ScalarTheme.BluePlanet) // Purple temasý varsayýlan olarak açýk býrakýldý
+           .WithTheme(ScalarTheme.BluePlanet)
            .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
 });
 
-
-
-app.UseMiddleware<GlobalExceptionMiddleware>();
-app.UseMiddleware<CorrelationIdMiddleware>();
-app.UseHttpsRedirection();
-
-app.UseAuthentication();  
-app.UseAuthorization();
-
+// Controllers
 app.MapControllers();
 
 app.Run();

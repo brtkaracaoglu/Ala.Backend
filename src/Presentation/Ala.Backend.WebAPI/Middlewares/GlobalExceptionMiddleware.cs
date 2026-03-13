@@ -9,7 +9,10 @@ namespace Ala.Backend.WebAPI.Middlewares
         private readonly IWebHostEnvironment _env;
         private readonly ILogger<GlobalExceptionMiddleware> _logger;
 
-        public GlobalExceptionMiddleware(RequestDelegate next, IWebHostEnvironment env, ILogger<GlobalExceptionMiddleware> logger)
+        public GlobalExceptionMiddleware(
+            RequestDelegate next,
+            IWebHostEnvironment env,
+            ILogger<GlobalExceptionMiddleware> logger)
         {
             _next = next;
             _env = env;
@@ -18,15 +21,7 @@ namespace Ala.Backend.WebAPI.Middlewares
 
         public async Task Invoke(HttpContext context)
         {
-            // Swagger veya Scalar gibi dökümantasyon araçlarını middleware dışında tut
-            if (context.Request.Path.StartsWithSegments("/swagger") || context.Request.Path.StartsWithSegments("/scalar"))
-            {
-                await _next(context);
-                return;
-            }
-
-            // Not: correlationId artık Serilog LogContext üzerinden otomatik takip ediliyor.
-            var correlationId = context.Items["CorrelationId"]?.ToString();
+            var correlationId = context.Items["CorrelationId"]?.ToString() ?? context.TraceIdentifier;
 
             try
             {
@@ -34,44 +29,44 @@ namespace Ala.Backend.WebAPI.Middlewares
             }
             catch (AppValidationException ex)
             {
-                LogWarning(context, ex, "Validation error");
+                LogWarning(context, ex, "Validation error", correlationId);
                 await WriteProblemAsync(context, CreateValidationProblem(context, ex, correlationId));
             }
             catch (AppException ex)
             {
-                LogWarning(context, ex, "Application error");
+                LogWarning(context, ex, "Application error", correlationId);
                 await WriteProblemAsync(context, CreateApplicationProblem(context, ex, correlationId));
             }
             catch (Exception ex)
             {
-                LogError(context, ex);
+                LogError(context, ex, correlationId);
                 await WriteProblemAsync(context, CreateUnhandledProblem(context, ex, correlationId));
             }
         }
 
-        private ProblemDetails CreateValidationProblem(HttpContext context, AppValidationException ex, string? correlationId)
+        private ProblemDetails CreateValidationProblem(HttpContext context, AppValidationException ex, string correlationId)
         {
             var pd = CreateBaseProblemDetails(context, ex, correlationId);
             pd.Extensions["errors"] = ex.ValidationErrors;
             return pd;
         }
 
-        private ProblemDetails CreateApplicationProblem(HttpContext context, AppException ex, string? correlationId)
+        private ProblemDetails CreateApplicationProblem(HttpContext context, AppException ex, string correlationId)
         {
             var pd = CreateBaseProblemDetails(context, ex, correlationId);
 
-            if (ex is BusinessRuleException busEx && !string.IsNullOrEmpty(busEx.PropertyName))
+            if (ex is BusinessRuleException busEx && !string.IsNullOrWhiteSpace(busEx.PropertyName))
             {
                 pd.Extensions["errors"] = new Dictionary<string, string[]>
-        {
-            { busEx.PropertyName, new[] { ex.Detail } }
-        };
+                {
+                    { busEx.PropertyName, new[] { ex.Detail } }
+                };
             }
 
             return pd;
         }
 
-        private ProblemDetails CreateUnhandledProblem(HttpContext context, Exception ex, string? correlationId)
+        private ProblemDetails CreateUnhandledProblem(HttpContext context, Exception ex, string correlationId)
         {
             var pd = new ProblemDetails
             {
@@ -93,14 +88,14 @@ namespace Ala.Backend.WebAPI.Middlewares
             return pd;
         }
 
-        private static ProblemDetails CreateBaseProblemDetails(HttpContext context, AppException ex, string? correlationId)
+        private static ProblemDetails CreateBaseProblemDetails(HttpContext context, AppException ex, string correlationId)
         {
             var pd = new ProblemDetails
             {
                 Title = ex.Title,
                 Detail = ex.Detail,
                 Type = ex.TypeUri,
-                Status = ex.Status,
+                Status = ex.StatusCode,
                 Instance = context.Request.Path
             };
 
@@ -108,18 +103,17 @@ namespace Ala.Backend.WebAPI.Middlewares
             return pd;
         }
 
-        private static void AddCommonExtensions(HttpContext context, ProblemDetails pd, string? correlationId)
+        private static void AddCommonExtensions(HttpContext context, ProblemDetails pd, string correlationId)
         {
-            // TraceId olarak öncelikle bizim correlationId'mizi, yoksa sistemin TraceIdentifier'ını kullanıyoruz.
-            pd.Extensions["traceId"] = correlationId ?? context.TraceIdentifier;
+            pd.Extensions["traceId"] = correlationId;
             pd.Extensions["method"] = context.Request.Method;
-            pd.Extensions["timestamp"] = DateTime.UtcNow;
+            pd.Extensions["timestamp"] = DateTime.UtcNow.ToString("O");
         }
-
 
         private static async Task WriteProblemAsync(HttpContext context, ProblemDetails pd)
         {
-            if (context.Response.HasStarted) return;
+            if (context.Response.HasStarted)
+                return;
 
             context.Response.StatusCode = pd.Status ?? StatusCodes.Status500InternalServerError;
             context.Response.ContentType = "application/problem+json";
@@ -127,17 +121,25 @@ namespace Ala.Backend.WebAPI.Middlewares
             await context.Response.WriteAsJsonAsync(pd);
         }
 
-        // Serilog Structured Logging kullanarak loglama metodları
-        private void LogWarning(HttpContext context, Exception ex, string title)
+        private void LogWarning(HttpContext context, Exception ex, string title, string correlationId)
         {
-            _logger.LogWarning(ex, "{Title} | Path: {Path} | Method: {Method}",
-                title, context.Request.Path, context.Request.Method);
+            _logger.LogWarning(
+                ex,
+                "{Title} | Path: {Path} | Method: {Method} | CorrelationId: {CorrelationId}",
+                title,
+                context.Request.Path,
+                context.Request.Method,
+                correlationId);
         }
 
-        private void LogError(HttpContext context, Exception ex)
+        private void LogError(HttpContext context, Exception ex, string correlationId)
         {
-            _logger.LogError(ex, "Unhandled exception occurred | Path: {Path} | Method: {Method}",
-                context.Request.Path, context.Request.Method);
+            _logger.LogError(
+                ex,
+                "Unhandled exception occurred | Path: {Path} | Method: {Method} | CorrelationId: {CorrelationId}",
+                context.Request.Path,
+                context.Request.Method,
+                correlationId);
         }
     }
 }

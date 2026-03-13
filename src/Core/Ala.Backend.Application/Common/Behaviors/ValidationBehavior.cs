@@ -16,7 +16,7 @@ namespace Ala.Backend.Application.Common.Behaviors
 
         public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
         {
-            if (!_validators.Any())
+            if (_validators is null || !_validators.Any())
                 return await next();
 
             var context = new ValidationContext<TRequest>(request);
@@ -27,7 +27,7 @@ namespace Ala.Backend.Application.Common.Behaviors
 
             var failures = validationResults
                 .SelectMany(r => r.Errors)
-                .Where(f => f != null)
+                .Where(f => f != null && !string.IsNullOrWhiteSpace(f.ErrorMessage))
                 .ToList();
 
             if (!failures.Any())

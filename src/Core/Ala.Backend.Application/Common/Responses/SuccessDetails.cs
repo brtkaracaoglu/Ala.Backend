@@ -11,7 +11,7 @@ namespace Ala.Backend.Application.Common.Responses
         public string Title { get; set; } = "Success";
 
         [JsonPropertyName("status")]
-        public int Status { get; set; } = 200;
+        public int StatusCode { get; set; } = 200;
 
         [JsonPropertyName("detail")]
         public string Detail { get; set; } = "İşlem başarılı.";

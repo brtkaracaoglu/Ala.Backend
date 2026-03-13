@@ -1,9 +1,7 @@
 ﻿using Ala.Backend.Application.Abstractions.Persistence;
-using Ala.Backend.Application.Abstractions.Persistence.Repositories;
-using Ala.Backend.Persistence.Interceptors;
+using Ala.Backend.Application.Abstractions.Persistence.Repositories.Identity;
 using Ala.Backend.Persistence.Main;
-using Ala.Backend.Persistence.Main.Repositories;
-using Ala.Backend.Persistence.Repositories;
+using Ala.Backend.Persistence.Main.Repositories.Identity;
 using Ala.Backend.Persistence.UnitOfWork;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +23,7 @@ namespace Ala.Backend.Persistence
 
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
+            services.AddScoped<IUserRolesRepository, UserRolesRepository>();
             return services;
         }
     }

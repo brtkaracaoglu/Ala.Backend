@@ -1,4 +1,4 @@
-﻿using Ala.Backend.Application.Abstractions.Persistence.Repositories;
+﻿using Ala.Backend.Application.Abstractions.Persistence.Repositories.Identity;
 using Ala.Backend.Application.Common.Responses;
 using Ala.Backend.Application.DTOs.Roles;
 using Ala.Backend.Application.SystemMessages;
