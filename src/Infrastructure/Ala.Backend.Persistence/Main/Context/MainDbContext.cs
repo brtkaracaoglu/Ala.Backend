@@ -11,6 +11,8 @@ namespace Ala.Backend.Persistence.Main.Context
         {
         }
 
+        public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

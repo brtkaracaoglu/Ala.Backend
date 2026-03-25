@@ -103,6 +103,7 @@ namespace Ala.Backend.WebAPI.Middlewares
             return pd;
         }
 
+        
         private static void AddCommonExtensions(HttpContext context, ProblemDetails pd, string correlationId)
         {
             pd.Extensions["traceId"] = correlationId;

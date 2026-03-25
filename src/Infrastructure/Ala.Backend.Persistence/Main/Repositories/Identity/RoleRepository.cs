@@ -1,22 +1,22 @@
 ﻿using Ala.Backend.Application.Abstractions.Persistence.Repositories.Identity;
 using Ala.Backend.Domain.Identity;
-using Microsoft.AspNetCore.Identity;
+using Ala.Backend.Persistence.Main.Context;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ala.Backend.Persistence.Main.Repositories.Identity
 {
     public class RoleRepository : IRoleRepository
     {
-        private readonly RoleManager<Role> _roleManager;
+        private readonly MainDbContext _context;
 
-        public RoleRepository(RoleManager<Role> roleManager)
+        public RoleRepository(MainDbContext context)
         {
-            _roleManager = roleManager;
+            _context = context;
         }
 
         public async Task<IList<Role>> GetAllRolesAsync(CancellationToken cancellationToken = default)
         {
-            return await _roleManager.Roles
+            return await _context.Roles
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
         }
