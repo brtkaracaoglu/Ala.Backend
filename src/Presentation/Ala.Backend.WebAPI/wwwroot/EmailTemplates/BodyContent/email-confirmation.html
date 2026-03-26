@@ -1,0 +1,101 @@
+﻿<tr>
+    <td align="center" style="padding:0 24px;">
+        <p style="margin:0 0 15px;
+                  font-family:'Segoe UI', Helvetica, Arial, sans-serif;
+                  font-size:24px;
+                  font-weight:600;
+                  color:#003A66;">
+            {{Mail_Title_EmailConfirmation}}
+        </p>
+
+        <p style="margin:0 0 30px;
+                  font-family:'Segoe UI', Helvetica, Arial, sans-serif;
+                  font-size:15px;
+                  line-height:1.6;
+                  color:#5F6C7B;">
+            {{Mail_Greeting}} <strong>{{FullName}}</strong>,<br>
+            {{Mail_Body_EmailConfirmation_Info}}
+        </p>
+    </td>
+</tr>
+
+<tr>
+    <td align="center" style="padding:0 20px 30px;">
+
+        <!-- OUTLOOK (WINDOWS) -->
+        <!--[if mso]>
+        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml"
+            href="{{Url}}"
+            style="height:50px; v-text-anchor:middle; width:220px;"
+            arcsize="12%"
+            strokecolor="#005596"
+            fillcolor="#005596">
+            <v:fill type="gradient" color="#005596" color2="#78BE20" angle="0"/>
+            <w:anchorlock/>
+            <center style="
+                color:#ffffff;
+                font-family:Segoe UI, Arial, sans-serif;
+                font-size:16px;
+                font-weight:600;">
+                {{Mail_Button_EmailConfirmation}}
+            </center>
+        </v:roundrect>
+        <![endif]-->
+        <!-- DİĞER TÜM MAİL İSTEMCİLERİ -->
+        <!--[if !mso]><!-- -->
+        <a href="{{Url}}"
+           style="
+           display:inline-block;
+           width:220px;
+           height:50px;
+           line-height:50px;
+           background-color:#005596;
+           background-image:linear-gradient(90deg,#005596 0%,#78BE20 100%);
+           color:#ffffff;
+           font-family:'Segoe UI', Helvetica, Arial, sans-serif;
+           font-size:16px;
+           font-weight:600;
+           text-align:center;
+           text-decoration:none;
+           border-radius:6px;
+           -webkit-text-size-adjust:none;">
+            {{Mail_Button_EmailConfirmation}}
+        </a>
+        <!--<![endif]-->
+
+    </td>
+</tr>
+
+
+<tr>
+    <td align="center" style="padding:0 40px 30px;">
+
+        <p style="margin:0 0 10px;
+                  font-family:'Segoe UI', Helvetica, Arial, sans-serif;
+                  font-size:13px;
+                  color:#999999;
+                  text-align:center;">
+            {{Mail_Body_FallbackInfo}}
+        </p>
+
+        <table width="100%" cellpadding="0" cellspacing="0"
+               style="background-color:#F8F9FA;
+                      border:1px dashed #D1D5DB;
+                      border-radius:6px;">
+            <tr>
+                <td style="padding:12px;
+                           font-family:Consolas,'Courier New',monospace;
+                           font-size:10px;
+                           line-height:1.4;
+                           color:#6B7280;
+                           text-align:center;
+                           word-break:break-all;">
+                    <a href="{{Url}}" style="text-decoration:none; color:#6B7280;">
+                        {{Url}}
+                    </a>
+                </td>
+            </tr>
+        </table>
+
+    </td>
+</tr>
