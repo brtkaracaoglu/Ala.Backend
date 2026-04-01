@@ -37,5 +37,8 @@ namespace Ala.Backend.Application.Abstractions.Infrastructure.Services.Identity
 
         Task<string> GenerateEmailConfirmationTokenAsync(User user);
         Task<string> GeneratePasswordResetTokenAsync(User user);
+
+        Task<SignInResult> CheckPasswordSignInAsync(User user, string password, bool lockoutOnFailure);
+
     }
 }

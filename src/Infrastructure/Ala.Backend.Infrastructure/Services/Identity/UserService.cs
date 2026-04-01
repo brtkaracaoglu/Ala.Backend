@@ -8,10 +8,12 @@ namespace Ala.Backend.Infrastructure.Services.Identity
     public class UserService : IUserService
     {
         private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
 
-        public UserService(UserManager<User> userManager)
+        public UserService(UserManager<User> userManager, SignInManager<User> signInManager)
         {
             _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         public async Task<User?> FindByIdAsync(string id)
@@ -145,6 +147,11 @@ namespace Ala.Backend.Infrastructure.Services.Identity
         {
             return await _userManager.GeneratePasswordResetTokenAsync(user);
         }
+        public async Task<SignInResult> CheckPasswordSignInAsync(User user, string password, bool lockoutOnFailure)
+        {
+            return await _signInManager.CheckPasswordSignInAsync(user, password, lockoutOnFailure);
+        }
+
     }
 }
 

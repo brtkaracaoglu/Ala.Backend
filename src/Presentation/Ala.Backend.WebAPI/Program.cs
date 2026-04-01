@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Serilog Configuration
 builder.Host.AddSerilogConfiguration();
-
+builder.Services.AddMemoryCache();
 // Services
 builder.Services.AddControllers();
 

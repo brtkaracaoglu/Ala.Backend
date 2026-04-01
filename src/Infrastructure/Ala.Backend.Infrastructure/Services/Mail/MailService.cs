@@ -11,10 +11,7 @@ namespace Ala.Backend.Infrastructure.Services.Mail
         private readonly ITemplateService _templateService;
         private readonly MailSettings _settings;
 
-        public MailService(
-            IMailSender mailSender,
-            ITemplateService templateService,
-            IOptions<MailSettings> options)
+        public MailService(IMailSender mailSender, ITemplateService templateService, IOptions<MailSettings> options)
         {
             _mailSender = mailSender;
             _templateService = templateService;

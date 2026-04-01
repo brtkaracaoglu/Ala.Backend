@@ -18,6 +18,13 @@ namespace Ala.Backend.Persistence.Main.Configurations.Identity
 
             builder.Property(x => x.Email).HasMaxLength(256);
             builder.Property(x => x.NormalizedEmail).HasMaxLength(256);
+            builder.Property(u => u.PhoneNumber).HasMaxLength(20).IsRequired();
+
+            builder.Property(u => u.IsActive).HasDefaultValue(true);
+            builder.Property(u => u.NeedPasswordReset).HasDefaultValue(false);
+
+            builder.HasMany(u => u.RefreshTokens).WithOne(rt => rt.User)
+                .HasForeignKey(rt => rt.UserId).OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

@@ -98,7 +98,8 @@ namespace Ala.Backend.Infrastructure.Services.Token
                 UserId = user.Id,
                 Token = GenerateRefreshToken(),
                 ExpiresAtUtc = now.AddDays(_jwtSettings.RefreshTokenExpiryDays),
-                CreatedByIp = ipAddress
+                CreatedByIp = ipAddress,
+
             };
 
             await _unitOfWork.WriteRepository<RefreshToken, int>().AddAsync(refresh);
