@@ -12,5 +12,6 @@ namespace Ala.Backend.Domain.Identity
 
         public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+        public ICollection<UserSession> Sessions { get; set; } = new List<UserSession>();
     }
 }
