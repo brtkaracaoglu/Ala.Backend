@@ -1,5 +1,7 @@
 ﻿using Ala.Backend.Application.Common.Exceptions;
+using Ala.Backend.Application.SystemMessages;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Ala.Backend.WebAPI.Middlewares
 {
@@ -37,6 +39,11 @@ namespace Ala.Backend.WebAPI.Middlewares
                 LogWarning(context, ex, "Application error", correlationId);
                 await WriteProblemAsync(context, CreateApplicationProblem(context, ex, correlationId));
             }
+            catch (SecurityTokenException ex)
+            {
+                LogWarning(context, ex, "Security token error", correlationId);
+                await WriteProblemAsync(context, CreateSecurityTokenProblem(context, ex, correlationId));
+            }
             catch (Exception ex)
             {
                 LogError(context, ex, correlationId);
@@ -66,13 +73,28 @@ namespace Ala.Backend.WebAPI.Middlewares
             return pd;
         }
 
+        private ProblemDetails CreateSecurityTokenProblem(HttpContext context, SecurityTokenException ex, string correlationId)
+        {
+            var pd = new ProblemDetails
+            {
+                Title = "Unauthorized",
+                Detail = ex.Message,
+                Type = ErrorTypes.Unauthorized,
+                Status = StatusCodes.Status401Unauthorized,
+                Instance = context.Request.Path
+            };
+
+            AddCommonExtensions(context, pd, correlationId);
+            return pd;
+        }
+
         private ProblemDetails CreateUnhandledProblem(HttpContext context, Exception ex, string correlationId)
         {
             var pd = new ProblemDetails
             {
                 Title = "Internal Server Error",
                 Detail = "Beklenmeyen bir hata oluştu.",
-                Type = "https://ala-backend.com/errors/internal",
+                Type = ErrorTypes.Internal,
                 Status = StatusCodes.Status500InternalServerError,
                 Instance = context.Request.Path
             };
@@ -103,7 +125,6 @@ namespace Ala.Backend.WebAPI.Middlewares
             return pd;
         }
 
-        
         private static void AddCommonExtensions(HttpContext context, ProblemDetails pd, string correlationId)
         {
             pd.Extensions["traceId"] = correlationId;

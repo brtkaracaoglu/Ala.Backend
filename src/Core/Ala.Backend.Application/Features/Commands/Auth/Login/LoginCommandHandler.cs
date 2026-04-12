@@ -1,28 +1,38 @@
 ﻿using Ala.Backend.Application.Abstractions.Infrastructure.Services.Identity;
+using Ala.Backend.Application.Abstractions.Infrastructure.Services.Sessions;
 using Ala.Backend.Application.Abstractions.Infrastructure.Services.Token;
 using Ala.Backend.Application.Abstractions.Presentation;
 using Ala.Backend.Application.Common.Exceptions;
 using Ala.Backend.Application.Common.Responses;
 using Ala.Backend.Application.DTOs.Auth;
 using Ala.Backend.Application.Extensions;
+using Ala.Backend.Application.SystemMessages;
 using MediatR;
 
 namespace Ala.Backend.Application.Features.Commands.Auth.Login
 {
-    public class LoginCommandHandler : IRequestHandler<LoginCommandRequest, SuccessDetails<LoginResponseDto>>
+    public class LoginCommandHandler : IRequestHandler<LoginCommandRequest, SuccessDetails<LoginCommandResult>>
     {
         private readonly IUserService _userService;
-        private readonly ITokenService _tokenService;
+        private readonly ITokenLifeCycleService _tokenLifeCycleService;
         private readonly IRequestContext _requestContext;
+        private readonly IUserSessionService _userSessionService;
 
-        public LoginCommandHandler(IUserService userService, ITokenService tokenService, IRequestContext requestContext)
+        public LoginCommandHandler(
+            IUserService userService,
+            ITokenLifeCycleService tokenLifeCycleService,
+            IRequestContext requestContext,
+            IUserSessionService userSessionService)
         {
             _userService = userService;
-            _tokenService = tokenService;
+            _tokenLifeCycleService = tokenLifeCycleService;
             _requestContext = requestContext;
+            _userSessionService = userSessionService;
         }
 
-        public async Task<SuccessDetails<LoginResponseDto>> Handle(LoginCommandRequest request, CancellationToken cancellationToken)
+        public async Task<SuccessDetails<LoginCommandResult>> Handle(
+            LoginCommandRequest request,
+            CancellationToken cancellationToken)
         {
             var isEmail = request.EmailOrUsername.Contains("@");
 
@@ -33,26 +43,34 @@ namespace Ala.Backend.Application.Features.Commands.Auth.Login
             if (user is null)
                 throw new UnauthorizedException("Kullanıcı adı/e-posta veya şifre hatalı.");
 
-            var signInResult = await _userService.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
+            var signInResult = await _userService.CheckPasswordSignInAsync(
+                user,
+                request.Password,
+                lockoutOnFailure: true);
 
             if (signInResult.IsLockedOut)
                 throw new UnauthorizedException("Hesabınız geçici olarak kilitlenmiştir.");
 
+            if (signInResult.IsNotAllowed)
+            {
+                if (!user.EmailConfirmed)
+                    throw new UnauthorizedException("E-posta adresiniz doğrulanmamış.");
+
+                if (!user.IsActive)
+                    throw new BusinessRuleException("Pasif kullanıcılar giriş yapamaz.");
+
+                throw new UnauthorizedException("Hesabınız giriş için uygun durumda değil.");
+            }
+
             if (!signInResult.Succeeded)
                 throw new UnauthorizedException("Kullanıcı adı/e-posta veya şifre hatalı.");
-
-            if (!user.IsActive)
-                throw new BusinessRuleException("Pasif kullanıcılar giriş yapamaz.");
-
-            if (!user.EmailConfirmed)
-                throw new UnauthorizedException("E-posta adresiniz doğrulanmamış.");
 
             if (user.NeedPasswordReset)
             {
                 var resetToken = await _userService.GeneratePasswordResetTokenAsync(user);
                 var encodedResetToken = TokenExtensions.EncodeToken(resetToken);
 
-                var dtoo = new LoginResponseDto
+                var resetDto = new LoginResponseDto
                 {
                     UserId = user.Id,
                     Email = user.Email ?? string.Empty,
@@ -62,11 +80,31 @@ namespace Ala.Backend.Application.Features.Commands.Auth.Login
                     RequiresPasswordReset = true,
                     ResetPasswordToken = encodedResetToken
                 };
-                return ResultResponse.Success(dtoo, "Giriş başarılı. Ancak şifre yenileme işlemi gereklidir.");
+
+                return ResultResponse.Success(
+                    new LoginCommandResult
+                    {
+                        Response = resetDto
+                    },
+                    "Giriş başarılı. Ancak şifre yenileme işlemi gereklidir.");
             }
 
-            var accessToken = await _tokenService.GenerateAccessTokenAsync(user);
-            var refreshToken = await _tokenService.CreateRefreshTokenAsync(user, _requestContext.IpAddress);
+            var accessToken = await _tokenLifeCycleService.GenerateAccessTokenAsync(
+                user,
+                cancellationToken: cancellationToken);
+
+            var refreshToken = await _tokenLifeCycleService.CreateRefreshTokenAsync(
+                user,
+                _requestContext,
+                accessToken.JwtId,
+                cancellationToken: cancellationToken);
+
+            await _userSessionService.CreateAsync(
+                user.Id,
+                refreshToken.FamilyId,
+                _requestContext,
+                cancellationToken);
+
             var roles = await _userService.GetRolesAsync(user);
 
             var dto = new LoginResponseDto
@@ -76,14 +114,20 @@ namespace Ala.Backend.Application.Features.Commands.Auth.Login
                 Username = user.UserName ?? string.Empty,
                 FullName = $"{user.FirstName} {user.LastName}".Trim(),
                 Roles = roles.ToList(),
-                AccessToken = accessToken.Token,
-                AccessTokenExpiresAtUtc = accessToken.ExpiresAtUtc,
-                RefreshToken = refreshToken.Token,
-                RefreshTokenExpiresAtUtc = refreshToken.ExpiresAtUtc,
-                RequiresPasswordReset = false
+                RequiresPasswordReset = false,
+                ResetPasswordToken = null
             };
 
-            return ResultResponse.Success(dto, "Giriş işlemi başarıyla tamamlandı.");
+            return ResultResponse.Success(
+                new LoginCommandResult
+                {
+                    Response = dto,
+                    AccessToken = accessToken.Token,
+                    AccessTokenExpiresAtUtc = accessToken.ExpiresAtUtc,
+                    RefreshToken = refreshToken.Token,
+                    RefreshTokenExpiresAtUtc = refreshToken.ExpiresAtUtc
+                },
+                Response.Common.OperationSuccess);
         }
     }
 }

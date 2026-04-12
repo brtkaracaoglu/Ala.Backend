@@ -1,58 +1,55 @@
-﻿using Ala.Backend.Application.Abstractions.Infrastructure.Services.Identity;
+﻿using Ala.Backend.Application.Abstractions.Infrastructure.Services.Sessions;
 using Ala.Backend.Application.Abstractions.Infrastructure.Services.Token;
+using Ala.Backend.Application.Abstractions.Presentation;
 using Ala.Backend.Application.Common.Exceptions;
 using Ala.Backend.Application.Common.Responses;
 using Ala.Backend.Application.DTOs.Auth;
+using Ala.Backend.Application.SystemMessages;
 using MediatR;
 
 namespace Ala.Backend.Application.Features.Commands.Auth.RefreshToken
 {
-    public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommandRequest, SuccessDetails<LoginResponseDto>>
+    public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommandRequest, SuccessDetails<RefreshTokenCommandResult>>
     {
-        private readonly IUserService _userService;
-        private readonly ITokenService _tokenService;
+        private readonly ITokenLifeCycleService _tokenLifeCycleService;
+        private readonly IRequestContext _requestContext;
+        private readonly IUserSessionService _userSessionService;
 
-        public RefreshTokenCommandHandler(ITokenService tokenService, IUserService userService)
+        public RefreshTokenCommandHandler(
+            ITokenLifeCycleService tokenLifeCycleService,
+            IRequestContext requestContext,
+            IUserSessionService userSessionService)
         {
-            _tokenService = tokenService;
-            _userService = userService;
+            _tokenLifeCycleService = tokenLifeCycleService;
+            _requestContext = requestContext;
+            _userSessionService = userSessionService;
         }
 
-        public async Task<SuccessDetails<LoginResponseDto>> Handle(RefreshTokenCommandRequest request, CancellationToken cancellationToken)
+        public async Task<SuccessDetails<RefreshTokenCommandResult>> Handle(
+            RefreshTokenCommandRequest request,
+            CancellationToken cancellationToken)
         {
-            var existingToken = await _tokenService.ValidateRefreshTokenAsync(request.RefreshToken);
+            if (string.IsNullOrWhiteSpace(request.RefreshToken))
+                throw new UnauthorizedException("Refresh token bulunamadı.");
 
-            if (existingToken is null)
-                throw new UnauthorizedException("Geçersiz veya süresi dolmuş refresh token.");
+            var tokenPair = await _tokenLifeCycleService.RotateRefreshTokenAsync(
+                request.RefreshToken,
+                _requestContext,
+                cancellationToken: cancellationToken);
 
-            if (existingToken.UserId is null)
-                throw new UnauthorizedException("Refresh token ile ilişkili kullanıcı bulunamadı.");
+            await _userSessionService.TouchAsync(
+                tokenPair.FamilyId,
+                cancellationToken);
 
-            var user = await _userService.FindByIdAsync(existingToken.UserId.Value.ToString());
-
-            if (user is null)
-                throw new UnauthorizedException("Kullanıcı bulunamadı.");
-
-            var newRefreshToken = await _tokenService.RotateRefreshTokenAsync(user, request.RefreshToken, request.IpAddress);
-
-            if (newRefreshToken is null)
-                throw new OperationFailedException("Refresh token yenilenemedi.");
-
-            var accessToken = await _tokenService.GenerateAccessTokenAsync(user);
-
-            var dto = new LoginResponseDto
-            {
-                UserId = user.Id,
-                Email = user.Email ?? string.Empty,
-                Username = user.UserName ?? string.Empty,
-                FullName = $"{user.FirstName} {user.LastName}".Trim(),
-                AccessToken = accessToken.Token,
-                AccessTokenExpiresAtUtc = accessToken.ExpiresAtUtc,
-                RefreshToken = newRefreshToken.Token,
-                RefreshTokenExpiresAtUtc = newRefreshToken.ExpiresAtUtc
-            };
-
-            return ResultResponse.Success(dto, "Token yenileme işlemi başarıyla tamamlandı.");
+            return ResultResponse.Success(
+                new RefreshTokenCommandResult
+                {
+                    AccessToken = tokenPair.AccessToken,
+                    AccessTokenExpiresAtUtc = tokenPair.AccessTokenExpiresAtUtc,
+                    RefreshToken = tokenPair.RefreshToken,
+                    RefreshTokenExpiresAtUtc = tokenPair.RefreshTokenExpiresAtUtc
+                },
+                Response.Common.OperationSuccess);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Ala.Backend.Application.Abstractions.Presentation;
+using System.Net;
 using System.Security.Claims;
 
 namespace Ala.Backend.WebAPI.RequestContext
@@ -15,7 +16,7 @@ namespace Ala.Backend.WebAPI.RequestContext
         public string CorrelationId =>
             _http.HttpContext?.Items["CorrelationId"]?.ToString()
             ?? _http.HttpContext?.TraceIdentifier
-            ?? Guid.NewGuid().ToString();
+            ?? "unknown";
 
         public int? UserId =>
             int.TryParse(
@@ -25,11 +26,34 @@ namespace Ala.Backend.WebAPI.RequestContext
                 : null;
 
         public string? Username =>
-            _http.HttpContext?.User?.Identity?.Name;
+            _http.HttpContext?.User?.FindFirst(ClaimTypes.Name)?.Value
+            ?? _http.HttpContext?.User?.Identity?.Name;
 
-        public string IpAddress =>
-            _http.HttpContext?.Connection?.RemoteIpAddress?.ToString()
-            ?? "127.0.0.1";
+        public string? Email =>
+            _http.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value
+            ?? _http.HttpContext?.User?.FindFirst("email")?.Value;
+
+        public ClaimsPrincipal? User =>
+            _http.HttpContext?.User;
+
+        public string IpAddress
+        {
+            get
+            {
+                var ip = _http.HttpContext?.Connection?.RemoteIpAddress;
+
+                if (ip is null)
+                    return "127.0.0.1";
+
+                if (IPAddress.IsLoopback(ip))
+                    return "127.0.0.1";
+
+                if (ip.IsIPv4MappedToIPv6)
+                    ip = ip.MapToIPv4();
+
+                return ip.ToString();
+            }
+        }
 
         public string? UserAgent =>
             _http.HttpContext?.Request?.Headers["User-Agent"].ToString();

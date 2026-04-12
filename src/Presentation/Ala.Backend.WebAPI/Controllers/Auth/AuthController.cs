@@ -3,14 +3,17 @@ using Ala.Backend.Application.Features.Commands.Auth.ConfirmEmail;
 using Ala.Backend.Application.Features.Commands.Auth.ForgotPassword;
 using Ala.Backend.Application.Features.Commands.Auth.Login;
 using Ala.Backend.Application.Features.Commands.Auth.Logout;
+using Ala.Backend.Application.Features.Commands.Auth.LogoutAll;
 using Ala.Backend.Application.Features.Commands.Auth.RefreshToken;
 using Ala.Backend.Application.Features.Commands.Auth.Register;
 using Ala.Backend.Application.Features.Commands.Auth.ResendConfirmationEmail;
 using Ala.Backend.Application.Features.Commands.Auth.ResetPassword;
+using Ala.Backend.Application.Features.Queries.Auth.GetCurrentUser;
+using Ala.Backend.Presentation.Abstractions;
+using Ala.Backend.WebAPI.Filters;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace Ala.Backend.WebAPI.Controllers.Auth
 {
@@ -20,39 +23,22 @@ namespace Ala.Backend.WebAPI.Controllers.Auth
     public class AuthController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly ITokenCookieService _tokenCookieService;
 
-        public AuthController(IMediator mediator)
+        public AuthController(
+            IMediator mediator,
+            ITokenCookieService tokenCookieService)
         {
             _mediator = mediator;
+            _tokenCookieService = tokenCookieService;
         }
 
-        [HttpGet("me")]
         [Authorize]
-        public IActionResult GetCurrentUser()
+        [HttpGet("me")]
+        public async Task<IActionResult> GetCurrentUser(CancellationToken cancellationToken)
         {
-            var allClaims = User.Claims.ToList();
-
-            var roles = allClaims
-                .Where(c => c.Type == ClaimTypes.Role)
-                .Select(c => c.Value)
-                .ToList();
-
-            var permissions = allClaims
-                .Where(c => c.Type == "permission")
-                .Select(c => c.Value)
-                .Distinct()
-                .ToList();
-
-            var userDto = new
-            {
-                Id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value,
-                UserName = User.Identity?.Name,
-                Email = User.FindFirst(ClaimTypes.Email)?.Value,
-                Roles = roles,
-                Permissions = permissions
-            };
-
-            return Ok(userDto);
+            var result = await _mediator.Send(new GetCurrentUserQueryRequest(), cancellationToken);
+            return Ok(result);
         }
 
         [HttpPost("register")]
@@ -65,34 +51,47 @@ namespace Ala.Backend.WebAPI.Controllers.Auth
 
         [HttpPost("login")]
         [AllowAnonymous]
+        [ServiceFilter(typeof(TokenCookieFilter))]
         public async Task<IActionResult> Login(LoginCommandRequest request)
         {
             var result = await _mediator.Send(request);
             return Ok(result);
         }
 
-        [HttpPost("refresh-token")]
+        [HttpPost("refresh")]
         [AllowAnonymous]
-        public async Task<IActionResult> RefreshToken()
+        [ServiceFilter(typeof(TokenCookieFilter))]
+        public async Task<IActionResult> Refresh()
         {
-            var refreshToken = Request.Cookies["RefreshToken"];
-
-            if (string.IsNullOrWhiteSpace(refreshToken))
-                return Unauthorized("Refresh token bulunamadı.");
-
-            var result = await _mediator.Send(new RefreshTokenCommandRequest
+            var request = new RefreshTokenCommandRequest
             {
-                RefreshToken = refreshToken
-            });
+                RefreshToken = _tokenCookieService.GetRefreshToken() ?? string.Empty
+            };
 
+            var result = await _mediator.Send(request);
             return Ok(result);
         }
 
         [HttpPost("logout")]
-        [Authorize]
+        [AllowAnonymous]
+        [ServiceFilter(typeof(TokenCookieFilter))]
         public async Task<IActionResult> Logout()
         {
-            var result = await _mediator.Send(new LogoutCommandRequest());
+            var request = new LogoutCommandRequest
+            {
+                RefreshToken = _tokenCookieService.GetRefreshToken()
+            };
+
+            var result = await _mediator.Send(request);
+            return Ok(result);
+        }
+
+        [HttpPost("logout-all")]
+        [Authorize]
+        [ServiceFilter(typeof(TokenCookieFilter))]
+        public async Task<IActionResult> LogoutAll(LogoutAllCommandRequest request)
+        {
+            var result = await _mediator.Send(request);
             return Ok(result);
         }
 
@@ -106,6 +105,7 @@ namespace Ala.Backend.WebAPI.Controllers.Auth
 
         [HttpPost("reset-password")]
         [AllowAnonymous]
+        [ServiceFilter(typeof(TokenCookieFilter))]
         public async Task<IActionResult> ResetPassword(ResetPasswordCommandRequest request)
         {
             var result = await _mediator.Send(request);
@@ -130,6 +130,7 @@ namespace Ala.Backend.WebAPI.Controllers.Auth
 
         [HttpPost("change-password")]
         [Authorize]
+        [ServiceFilter(typeof(TokenCookieFilter))]
         public async Task<IActionResult> ChangePassword(ChangePasswordCommandRequest request)
         {
             var result = await _mediator.Send(request);

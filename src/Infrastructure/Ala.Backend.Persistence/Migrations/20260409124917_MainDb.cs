@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ala.Backend.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class mig1 : Migration
+    public partial class MainDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -82,18 +82,23 @@ namespace Ala.Backend.Persistence.Migrations
                 name: "RefreshTokens",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<int>(type: "integer", nullable: true),
-                    Token = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    TokenHash = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    FamilyId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ParentRefreshTokenId = table.Column<long>(type: "bigint", nullable: true),
+                    ReplacedByTokenHash = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true),
+                    JwtId = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                     ExpiresAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CreatedByIp = table.Column<string>(type: "text", nullable: false),
-                    RevokedByIp = table.Column<string>(type: "text", nullable: true),
-                    ReasonRevoked = table.Column<string>(type: "text", nullable: true),
-                    ReplacedByToken = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    CreatedByIp = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    CreatedByUserAgent = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true),
+                    RevokedByIp = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
+                    ReasonRevoked = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     RevokedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    IsUsed = table.Column<bool>(type: "boolean", nullable: false)
+                    IsUsed = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    UsedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -172,6 +177,33 @@ namespace Ala.Backend.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserSessions",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    FamilyId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByIp = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    CreatedByUserAgent = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true),
+                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastActivityOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    RevokedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    RevokedByIp = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
+                    ReasonRevoked = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserSessions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserSessions_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserTokens",
                 columns: table => new
                 {
@@ -192,15 +224,25 @@ namespace Ala.Backend.Persistence.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_RefreshTokens_Token",
+                name: "IX_RefreshTokens_FamilyId",
                 table: "RefreshTokens",
-                column: "Token",
+                column: "FamilyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_TokenHash",
+                table: "RefreshTokens",
+                column: "TokenHash",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_RefreshTokens_UserId",
                 table: "RefreshTokens",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_UserId_FamilyId",
+                table: "RefreshTokens",
+                columns: new[] { "UserId", "FamilyId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_RoleClaims_RoleId",
@@ -238,6 +280,22 @@ namespace Ala.Backend.Persistence.Migrations
                 table: "Users",
                 column: "NormalizedUserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserSessions_FamilyId",
+                table: "UserSessions",
+                column: "FamilyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserSessions_UserId",
+                table: "UserSessions",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserSessions_UserId_FamilyId",
+                table: "UserSessions",
+                columns: new[] { "UserId", "FamilyId" },
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -257,6 +315,9 @@ namespace Ala.Backend.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "UserRoles");
+
+            migrationBuilder.DropTable(
+                name: "UserSessions");
 
             migrationBuilder.DropTable(
                 name: "UserTokens");

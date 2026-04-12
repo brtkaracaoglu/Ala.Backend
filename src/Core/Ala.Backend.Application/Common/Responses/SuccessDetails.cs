@@ -2,7 +2,7 @@
 
 namespace Ala.Backend.Application.Common.Responses
 {
-    public class SuccessDetails
+    public class SuccessDetails : ISuccessDetails
     {
         [JsonPropertyName("type")]
         public string Type { get; set; } = "https://ala-backend.com/success";
@@ -18,12 +18,17 @@ namespace Ala.Backend.Application.Common.Responses
 
         [JsonPropertyName("meta")]
         public Dictionary<string, object>? Meta { get; set; }
+
+        [JsonIgnore]
+        public virtual object? DataObject => null;
     }
 
     public class SuccessDetails<T> : SuccessDetails
     {
         [JsonPropertyName("data")]
         public T? Data { get; set; }
+
+        [JsonIgnore]
+        public override object? DataObject => Data;
     }
 }
-

@@ -1,21 +1,21 @@
 ﻿using Ala.Backend.Application.Abstractions.Infrastructure.Services.Sessions;
 using Ala.Backend.Application.Abstractions.Infrastructure.Services.Token;
 using Ala.Backend.Application.Abstractions.Presentation;
+using Ala.Backend.Application.Common.Exceptions;
 using Ala.Backend.Application.Common.Responses;
 using Ala.Backend.Application.DTOs.Auth;
 using Ala.Backend.Application.SystemMessages;
 using MediatR;
 
-namespace Ala.Backend.Application.Features.Commands.Auth.Logout
+namespace Ala.Backend.Application.Features.Commands.Auth.LogoutAll
 {
-    public class LogoutCommandHandler
-        : IRequestHandler<LogoutCommandRequest, SuccessDetails<LogoutCommandResult>>
+    public class LogoutAllCommandHandler : IRequestHandler<LogoutAllCommandRequest, SuccessDetails<LogoutCommandResult>>
     {
         private readonly IRequestContext _requestContext;
         private readonly IUserSessionService _userSessionService;
         private readonly ITokenRevocationService _tokenRevocationService;
 
-        public LogoutCommandHandler(
+        public LogoutAllCommandHandler(
             IRequestContext requestContext,
             IUserSessionService userSessionService,
             ITokenRevocationService tokenRevocationService)
@@ -26,32 +26,23 @@ namespace Ala.Backend.Application.Features.Commands.Auth.Logout
         }
 
         public async Task<SuccessDetails<LogoutCommandResult>> Handle(
-            LogoutCommandRequest request,
+            LogoutAllCommandRequest request,
             CancellationToken cancellationToken)
         {
-            var refreshToken = request.RefreshToken;
+            if (_requestContext.UserId is null)
+                throw new UnauthorizedException("Oturum bilgisi bulunamadı.");
 
-            if (!string.IsNullOrWhiteSpace(refreshToken))
-            {
-                var familyId = await _tokenRevocationService.GetFamilyIdByRefreshTokenAsync(
-                    refreshToken,
-                    cancellationToken);
+            await _tokenRevocationService.RevokeAllAsync(
+                _requestContext.UserId.Value,
+                reason: "Kullanıcı tüm oturumlardan çıkış yapsın.",
+                revokedByIp: _requestContext.IpAddress,
+                cancellationToken: cancellationToken);
 
-                await _tokenRevocationService.RevokeAsync(
-                    refreshToken,
-                    reason: "Kullanıcı mevcut oturumdan çıkış yaptı.",
-                    revokedByIp: _requestContext.IpAddress,
-                    cancellationToken: cancellationToken);
-
-                if (familyId.HasValue)
-                {
-                    await _userSessionService.RevokeByFamilyIdAsync(
-                        familyId.Value,
-                        _requestContext.IpAddress,
-                        "Kullanıcı mevcut oturumdan çıkış yaptı.",
-                        cancellationToken);
-                }
-            }
+            await _userSessionService.RevokeAllAsync(
+                _requestContext.UserId.Value,
+                _requestContext.IpAddress,
+                "Kullanıcı tüm oturumlardan çıkış yaptı.",
+                cancellationToken);
 
             return ResultResponse.Success(
                 new LogoutCommandResult

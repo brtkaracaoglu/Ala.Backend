@@ -16,11 +16,6 @@ namespace Ala.Backend.Application.Features.Commands.Auth.ChangePassword
 
         public ChangePasswordCommandValidator()
         {
-            RuleFor(x => x.UserId)
-                 .Cascade(CascadeMode.Stop)
-                 .NotEmpty().WithMessage("Kullanıcı ID zorunludur.")
-                 .GreaterThan(0).WithMessage("Geçerli bir kullanıcı ID giriniz.");
-
             RuleFor(x => x.OldPassword)
                 .NotEmpty()
                 .WithMessage("Mevcut şifre zorunludur.");

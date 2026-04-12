@@ -1,24 +1,38 @@
 ﻿using Ala.Backend.Application.Abstractions.Infrastructure.Services.Identity;
+using Ala.Backend.Application.Abstractions.Infrastructure.Services.Sessions;
+using Ala.Backend.Application.Abstractions.Infrastructure.Services.Token;
 using Ala.Backend.Application.Abstractions.Presentation;
 using Ala.Backend.Application.Common.Exceptions;
 using Ala.Backend.Application.Common.Responses;
+using Ala.Backend.Application.DTOs.Auth;
 using Ala.Backend.Application.SystemMessages;
 using MediatR;
 
 namespace Ala.Backend.Application.Features.Commands.Auth.ChangePassword
 {
-    public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordCommandRequest, SuccessDetails>
+    public class ChangePasswordCommandHandler
+        : IRequestHandler<ChangePasswordCommandRequest, SuccessDetails<LogoutCommandResult>>
     {
         private readonly IUserService _userService;
         private readonly IRequestContext _requestContext;
+        private readonly IUserSessionService _userSessionService;
+        private readonly ITokenRevocationService _tokenRevocationService;
 
-        public ChangePasswordCommandHandler(IUserService userService, IRequestContext requestContext)
+        public ChangePasswordCommandHandler(
+            IUserService userService,
+            IRequestContext requestContext,
+            IUserSessionService userSessionService,
+            ITokenRevocationService tokenRevocationService)
         {
             _userService = userService;
             _requestContext = requestContext;
+            _userSessionService = userSessionService;
+            _tokenRevocationService = tokenRevocationService;
         }
 
-        public async Task<SuccessDetails> Handle(ChangePasswordCommandRequest request, CancellationToken cancellationToken)
+        public async Task<SuccessDetails<LogoutCommandResult>> Handle(
+            ChangePasswordCommandRequest request,
+            CancellationToken cancellationToken)
         {
             if (_requestContext.UserId is null)
                 throw new UnauthorizedException("Oturum bilgisi bulunamadı.");
@@ -28,12 +42,18 @@ namespace Ala.Backend.Application.Features.Commands.Auth.ChangePassword
             if (user is null)
                 throw new NotFoundException("Kullanıcı bulunamadı.");
 
-            var check = await _userService.CheckPasswordSignInAsync(user, request.OldPassword, lockoutOnFailure: false);
+            var check = await _userService.CheckPasswordSignInAsync(
+                user,
+                request.OldPassword,
+                lockoutOnFailure: false);
 
             if (!check.Succeeded)
                 throw new UnauthorizedException("Mevcut şifre hatalı.");
 
-            var result = await _userService.ChangePasswordAsync(user, request.OldPassword, request.NewPassword);
+            var result = await _userService.ChangePasswordAsync(
+                user,
+                request.OldPassword,
+                request.NewPassword);
 
             if (!result.Succeeded)
             {
@@ -43,7 +63,25 @@ namespace Ala.Backend.Application.Features.Commands.Auth.ChangePassword
 
             await _userService.UpdateSecurityStampAsync(user);
 
-            return ResultResponse.Success(Response.Common.OperationSuccess);
+            await _tokenRevocationService.RevokeAllAsync(
+                user.Id,
+                "Şifre değiştirildiği için tüm oturumlar sonlandırıldı.",
+                _requestContext.IpAddress,
+                cancellationToken);
+
+            await _userSessionService.RevokeAllAsync(
+                user.Id,
+                _requestContext.IpAddress,
+                "Şifre değiştirildiği için tüm oturumlar sonlandırıldı.",
+                cancellationToken);
+
+            return ResultResponse.Success(
+                new LogoutCommandResult
+                {
+                    ClearAccessTokenCookie = true,
+                    ClearRefreshTokenCookie = true
+                },
+                Response.Common.OperationSuccess);
         }
     }
 }

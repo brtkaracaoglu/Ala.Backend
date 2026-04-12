@@ -2,6 +2,8 @@
 {
     public class MailSettings
     {
+        public const string SectionName = "MailSettings";
+
         public string Host { get; set; } = string.Empty;
         public int Port { get; set; }
         public string Username { get; set; } = string.Empty;
@@ -10,7 +12,6 @@
         public bool EnableSsl { get; set; }
         public string ClientUrl { get; set; } = string.Empty;
         public string AdminEmail { get; set; } = string.Empty;
-
         public bool IgnoreSslErrors { get; set; }
     }
 }

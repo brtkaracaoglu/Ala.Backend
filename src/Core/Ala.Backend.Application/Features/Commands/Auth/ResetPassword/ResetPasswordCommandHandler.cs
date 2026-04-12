@@ -1,22 +1,38 @@
 ﻿using Ala.Backend.Application.Abstractions.Infrastructure.Services.Identity;
+using Ala.Backend.Application.Abstractions.Infrastructure.Services.Sessions;
+using Ala.Backend.Application.Abstractions.Infrastructure.Services.Token;
+using Ala.Backend.Application.Abstractions.Presentation;
 using Ala.Backend.Application.Common.Exceptions;
 using Ala.Backend.Application.Common.Responses;
+using Ala.Backend.Application.DTOs.Auth;
 using Ala.Backend.Application.Extensions;
 using Ala.Backend.Application.SystemMessages;
 using MediatR;
 
 namespace Ala.Backend.Application.Features.Commands.Auth.ResetPassword
 {
-    public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommandRequest, SuccessDetails>
+    public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommandRequest, SuccessDetails<LogoutCommandResult>>
     {
         private readonly IUserService _userService;
+        private readonly IUserSessionService _userSessionService;
+        private readonly IRequestContext _requestContext;
+        private readonly ITokenRevocationService _tokenRevocationService;
 
-        public ResetPasswordCommandHandler(IUserService userService)
+        public ResetPasswordCommandHandler(
+            IUserService userService,
+            IUserSessionService userSessionService,
+            IRequestContext requestContext,
+            ITokenRevocationService tokenRevocationService)
         {
             _userService = userService;
+            _userSessionService = userSessionService;
+            _requestContext = requestContext;
+            _tokenRevocationService = tokenRevocationService;
         }
 
-        public async Task<SuccessDetails> Handle(ResetPasswordCommandRequest request, CancellationToken cancellationToken)
+        public async Task<SuccessDetails<LogoutCommandResult>> Handle(
+            ResetPasswordCommandRequest request,
+            CancellationToken cancellationToken)
         {
             var user = await _userService.FindByIdAsync(request.UserId.ToString());
 
@@ -39,7 +55,10 @@ namespace Ala.Backend.Application.Features.Commands.Auth.ResetPassword
                 throw new BadRequestException("Geçersiz şifre sıfırlama token'ı.");
             }
 
-            var result = await _userService.ResetPasswordAsync(user, decodedToken, request.NewPassword);
+            var result = await _userService.ResetPasswordAsync(
+                user,
+                decodedToken,
+                request.NewPassword);
 
             if (!result.Succeeded)
             {
@@ -52,7 +71,25 @@ namespace Ala.Backend.Application.Features.Commands.Auth.ResetPassword
             await _userService.UpdateAsync(user);
             await _userService.UpdateSecurityStampAsync(user);
 
-            return ResultResponse.Success(Response.Common.OperationSuccess);
+            await _tokenRevocationService.RevokeAllAsync(
+                user.Id,
+                "Şifre sıfırlandığı için tüm oturumlar sonlandırıldı.",
+                _requestContext.IpAddress,
+                cancellationToken);
+
+            await _userSessionService.RevokeAllAsync(
+                user.Id,
+                _requestContext.IpAddress,
+                "Şifre sıfırlandığı için tüm oturumlar sonlandırıldı.",
+                cancellationToken);
+
+            return ResultResponse.Success(
+                new LogoutCommandResult
+                {
+                    ClearAccessTokenCookie = true,
+                    ClearRefreshTokenCookie = true
+                },
+                Response.Common.OperationSuccess);
         }
     }
 }
