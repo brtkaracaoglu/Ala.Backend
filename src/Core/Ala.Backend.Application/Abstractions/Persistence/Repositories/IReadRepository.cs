@@ -20,6 +20,8 @@ namespace Ala.Backend.Application.Abstractions.Persistence
         Task<IReadOnlyList<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate,
             CancellationToken cancellationToken = default);
 
+        Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+
         IQueryable<TEntity> Query();
     }
 }

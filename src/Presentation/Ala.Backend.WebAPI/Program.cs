@@ -1,9 +1,11 @@
 using Ala.Backend.Application;
+using Ala.Backend.Application.Abstractions.Persistence.Service.Permission;
 using Ala.Backend.Infrastructure;
 using Ala.Backend.Persistence;
 using Ala.Backend.WebAPI;
 using Ala.Backend.WebAPI.Extensions;
 using Ala.Backend.WebAPI.Middlewares;
+using Ala.Backend.WebAPI.Startup;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using Serilog;
@@ -45,6 +47,14 @@ if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 }
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<IPermissionSeeder>();
+    var permissions = PermissionScanner.ScanControllers(typeof(Program).Assembly);
+    await seeder.SyncPermissionsAsync(permissions);
+}
+
 
 await app.RunAsync();
 

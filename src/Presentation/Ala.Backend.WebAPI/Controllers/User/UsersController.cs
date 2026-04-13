@@ -6,11 +6,14 @@ using Ala.Backend.Application.Features.Commands.Users.UnlockUser;
 using Ala.Backend.Application.Features.Commands.Users.UpdateUser;
 using Ala.Backend.Application.Features.Queries.Users.GetAllUsers;
 using Ala.Backend.Application.Features.Queries.Users.GetUserById;
+using Ala.Backend.WebAPI.Authorization.Permissions;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Ala.Backend.WebAPI.Controllers.User
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     [Tags("Users")]
@@ -24,6 +27,7 @@ namespace Ala.Backend.WebAPI.Controllers.User
         }
 
         [HttpGet]
+        [PermissionAuthorize(Permissions.Users.List)]
         public async Task<IActionResult> GetAll()
         {
             var response = await _mediator.Send(new GetAllUsersQueryRequest());
@@ -31,6 +35,7 @@ namespace Ala.Backend.WebAPI.Controllers.User
         }
 
         [HttpGet("{id}")]
+        [PermissionAuthorize(Permissions.Users.View)]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
             var request = new GetUserByIdQueryRequest { Id = id };
@@ -42,7 +47,7 @@ namespace Ala.Backend.WebAPI.Controllers.User
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] CreateUserCommandRequest request)
         {
-            var response = await _mediator.Send(request);       
+            var response = await _mediator.Send(request);
             return Ok(response);
         }
 

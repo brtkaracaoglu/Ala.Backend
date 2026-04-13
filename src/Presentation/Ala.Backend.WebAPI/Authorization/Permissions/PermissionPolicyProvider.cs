@@ -1,0 +1,38 @@
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Options;
+
+namespace Ala.Backend.WebAPI.Authorization.Permissions
+{
+    public sealed class PermissionPolicyProvider : IAuthorizationPolicyProvider
+    {
+        private readonly DefaultAuthorizationPolicyProvider _fallbackPolicyProvider;
+
+        public PermissionPolicyProvider(IOptions<AuthorizationOptions> options)
+        {
+            _fallbackPolicyProvider = new DefaultAuthorizationPolicyProvider(options);
+        }
+
+        public Task<AuthorizationPolicy> GetDefaultPolicyAsync()
+            => _fallbackPolicyProvider.GetDefaultPolicyAsync();
+
+        public Task<AuthorizationPolicy?> GetFallbackPolicyAsync()
+            => _fallbackPolicyProvider.GetFallbackPolicyAsync();
+
+        public Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
+        {
+            if (policyName.StartsWith(PermissionPolicyConstants.Prefix, StringComparison.Ordinal))
+            {
+                var permission = policyName[PermissionPolicyConstants.Prefix.Length..];
+
+                var policy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
+                    .AddRequirements(new PermissionRequirement(permission))
+                    .Build();
+
+                return Task.FromResult<AuthorizationPolicy?>(policy);
+            }
+
+            return _fallbackPolicyProvider.GetPolicyAsync(policyName);
+        }
+    }
+}

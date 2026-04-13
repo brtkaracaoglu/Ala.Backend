@@ -13,6 +13,7 @@ namespace Ala.Backend.Persistence.Main.Context
 
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
         public DbSet<UserSession> UserSessions => Set<UserSession>();
+        public DbSet<Permission> Permissions => Set<Permission>();
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

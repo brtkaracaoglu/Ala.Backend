@@ -43,6 +43,11 @@ namespace Ala.Backend.Persistence.Repositories
             return await _dbSet.Where(predicate).ToListAsync(cancellationToken);
         }
 
+        public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        {
+            return await _context.Set<TEntity>().AnyAsync(predicate, cancellationToken);
+        }
+
         public IQueryable<TEntity> Query()
         {
             return _dbSet.AsNoTracking().AsQueryable();
