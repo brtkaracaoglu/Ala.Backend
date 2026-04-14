@@ -1,8 +1,8 @@
 ﻿using Ala.Backend.Application.Features.Commands.Roles.CreateRole;
 using Ala.Backend.Application.Features.Commands.Roles.DeleteRole;
 using Ala.Backend.Application.Features.Commands.Roles.UpdateRole;
-using Ala.Backend.Application.Features.Queries.Roles.GetAllRoles;
 using Ala.Backend.Application.Features.Queries.Roles.GetRoleById;
+using Ala.Backend.Application.Features.Queries.Roles.GetRoles;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,10 +21,10 @@ namespace Ala.Backend.WebAPI.Controllers.Role
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetRoles([FromQuery] GetRolesQueryRequest request)
         {
-            var response = await _mediator.Send(new GetAllRolesQueryRequest());
-            return Ok(response);
+            var result = await _mediator.Send(request);
+            return Ok(result);
         }
 
         [HttpGet("{id:int}")]

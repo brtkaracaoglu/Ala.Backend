@@ -1,9 +1,10 @@
-﻿using Ala.Backend.Domain.Identity;
+﻿using Ala.Backend.Application.Common.Responses;
+using Ala.Backend.Application.DTOs.Users;
 
 namespace Ala.Backend.Application.Abstractions.Persistence.Repositories.Identity
 {
     public interface IUserRepository
     {
-        Task<IList<User>> GetAllUsersAsync(CancellationToken cancellationToken = default);
+        Task<PagedResponse<UserDto>> GetPagedUsersWithRolesAsync(UserListFilter filter, CancellationToken cancellationToken = default);
     }
 }

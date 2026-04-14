@@ -4,8 +4,8 @@ using Ala.Backend.Application.Features.Commands.Users.LockUser;
 using Ala.Backend.Application.Features.Commands.Users.SetActiveUser;
 using Ala.Backend.Application.Features.Commands.Users.UnlockUser;
 using Ala.Backend.Application.Features.Commands.Users.UpdateUser;
-using Ala.Backend.Application.Features.Queries.Users.GetAllUsers;
 using Ala.Backend.Application.Features.Queries.Users.GetUserById;
+using Ala.Backend.Application.Features.Queries.Users.GetUsers;
 using Ala.Backend.WebAPI.Authorization.Permissions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Ala.Backend.WebAPI.Controllers.User
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     [Tags("Users")]
@@ -27,12 +27,13 @@ namespace Ala.Backend.WebAPI.Controllers.User
         }
 
         [HttpGet]
-        [PermissionAuthorize(Permissions.Users.List)]
-        public async Task<IActionResult> GetAll()
+        //[PermissionAuthorize(Permissions.Users.List)]
+        public async Task<IActionResult> GetUsers([FromQuery] GetUsersQueryRequest request)
         {
-            var response = await _mediator.Send(new GetAllUsersQueryRequest());
-            return Ok(response);
+            var result = await _mediator.Send(request);
+            return Ok(result);
         }
+
 
         [HttpGet("{id}")]
         [PermissionAuthorize(Permissions.Users.View)]
