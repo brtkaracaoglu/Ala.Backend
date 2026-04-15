@@ -1,6 +1,6 @@
 ﻿namespace Ala.Backend.Application.Common.Requests
 {
-    public abstract class PagedQueryRequest
+    public abstract class PagedRequest
     {
         private int _page = 1;
         private int _pageSize = 10;
@@ -14,11 +14,12 @@
         public int PageSize
         {
             get => _pageSize;
-            set => _pageSize = value < 1 ? 10 : value > 100 ? 100 : value;
+            set => _pageSize = value switch
+            {
+                < 1 => 10,
+                > 100 => 100,
+                _ => value
+            };
         }
-
-        public string? Search { get; set; }
-        public string? SortBy { get; set; } = "Id";
-        public string? SortDirection { get; set; } = "asc";
     }
 }

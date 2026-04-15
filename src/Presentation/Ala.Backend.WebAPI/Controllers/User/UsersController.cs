@@ -4,8 +4,8 @@ using Ala.Backend.Application.Features.Commands.Users.LockUser;
 using Ala.Backend.Application.Features.Commands.Users.SetActiveUser;
 using Ala.Backend.Application.Features.Commands.Users.UnlockUser;
 using Ala.Backend.Application.Features.Commands.Users.UpdateUser;
+using Ala.Backend.Application.Features.Queries.Users.GetPagedUsers;
 using Ala.Backend.Application.Features.Queries.Users.GetUserById;
-using Ala.Backend.Application.Features.Queries.Users.GetUsers;
 using Ala.Backend.WebAPI.Authorization.Permissions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -26,9 +26,8 @@ namespace Ala.Backend.WebAPI.Controllers.User
             _mediator = mediator;
         }
 
-        [HttpGet]
-        //[PermissionAuthorize(Permissions.Users.List)]
-        public async Task<IActionResult> GetUsers([FromQuery] GetUsersQueryRequest request)
+        [HttpGet("paged")]
+        public async Task<IActionResult> GetPagedUsers([FromQuery] GetPagedUsersQueryRequest request)
         {
             var result = await _mediator.Send(request);
             return Ok(result);

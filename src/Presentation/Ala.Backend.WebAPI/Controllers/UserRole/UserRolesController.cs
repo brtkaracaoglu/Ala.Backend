@@ -1,6 +1,6 @@
 ﻿using Ala.Backend.Application.Features.Commands.UserRoles.AddRoleToUser;
 using Ala.Backend.Application.Features.Commands.UserRoles.RemoveRoleFromUser;
-using Ala.Backend.Application.Features.Queries.UserRoles.GetAllUserRoles;
+using Ala.Backend.Application.Features.Queries.UserRoles.GetPagedUserRoles;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,11 +18,11 @@ namespace Ala.Backend.WebAPI.Controllers.UserRole
             _mediator = mediator;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] GetAllUserRolesQueryRequest request)
+        [HttpGet("paged")]
+        public async Task<IActionResult> GetPaged([FromQuery] GetPagedUserRolesQueryRequest request)
         {
-            var response = await _mediator.Send(request);
-            return Ok(response);
+            var result = await _mediator.Send(request);
+            return Ok(result);
         }
 
         [HttpPost("add-role")]

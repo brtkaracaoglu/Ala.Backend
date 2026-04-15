@@ -1,5 +1,7 @@
-﻿using System.Linq.Expressions;
+﻿using Ala.Backend.Application.Common.Requests;
+using Ala.Backend.Application.Common.Responses;
 using Ala.Backend.Domain.Common;
+using System.Linq.Expressions;
 
 namespace Ala.Backend.Application.Abstractions.Persistence
 {
@@ -19,6 +21,11 @@ namespace Ala.Backend.Application.Abstractions.Persistence
 
         Task<IReadOnlyList<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate,
             CancellationToken cancellationToken = default);
+        Task<PagedResponse<TDto>> GetPagedAsync<TDto, TRequest>(TRequest request, Func<IQueryable<TEntity>, IQueryable<TEntity>> queryBuilder,
+           Expression<Func<TEntity, TDto>> selector,
+           bool enableTracking = false,
+           CancellationToken cancellationToken = default)
+           where TRequest : PagedRequest;
 
         Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
 

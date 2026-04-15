@@ -1,8 +1,8 @@
 ﻿using Ala.Backend.Application.Features.Commands.Roles.CreateRole;
 using Ala.Backend.Application.Features.Commands.Roles.DeleteRole;
 using Ala.Backend.Application.Features.Commands.Roles.UpdateRole;
+using Ala.Backend.Application.Features.Queries.Roles.GetPagedRoles;
 using Ala.Backend.Application.Features.Queries.Roles.GetRoleById;
-using Ala.Backend.Application.Features.Queries.Roles.GetRoles;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,8 +20,8 @@ namespace Ala.Backend.WebAPI.Controllers.Role
             _mediator = mediator;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetRoles([FromQuery] GetRolesQueryRequest request)
+        [HttpGet("paged")]
+        public async Task<IActionResult> GetPagedRoles([FromQuery] GetPagedRolesQueryRequest request)
         {
             var result = await _mediator.Send(request);
             return Ok(result);
