@@ -1,5 +1,5 @@
-﻿using Ala.Backend.Domain.Identity;
-using Microsoft.AspNetCore.Identity;
+﻿using Ala.Backend.Application.Common.Identity;
+using Ala.Backend.Domain.Identity;
 using System.Security.Claims;
 
 namespace Ala.Backend.Application.Abstractions.Infrastructure.Services.Identity
@@ -10,11 +10,11 @@ namespace Ala.Backend.Application.Abstractions.Infrastructure.Services.Identity
         Task<Role?> FindByNameAsync(string name);
         Task<IList<Claim>> GetClaimsAsync(Role role);
 
-        Task<IdentityResult> CreateAsync(Role role);
-        Task<IdentityResult> UpdateAsync(Role role);
-        Task<IdentityResult> DeleteAsync(Role role);
+        Task<IdentityOperationResult> CreateAsync(Role role);
+        Task<IdentityOperationResult> UpdateAsync(Role role);
+        Task<IdentityOperationResult> DeleteAsync(Role role);
 
-        Task<IdentityResult> AddClaimAsync(Role role, Claim claim);
-        Task<IdentityResult> RemoveClaimAsync(Role role, Claim claim);
+        Task<IdentityOperationResult> AddClaimAsync(Role role, Claim claim);
+        Task<IdentityOperationResult> RemoveClaimAsync(Role role, Claim claim);
     }
 }

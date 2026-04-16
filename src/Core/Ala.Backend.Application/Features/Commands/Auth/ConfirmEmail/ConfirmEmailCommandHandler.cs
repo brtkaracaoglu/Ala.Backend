@@ -1,7 +1,6 @@
 ﻿using Ala.Backend.Application.Abstractions.Infrastructure.Services.Identity;
 using Ala.Backend.Application.Common.Exceptions;
 using Ala.Backend.Application.Common.Responses;
-using Ala.Backend.Application.DTOs.Auth;
 using Ala.Backend.Application.Extensions;
 using Ala.Backend.Application.SystemMessages;
 using MediatR;

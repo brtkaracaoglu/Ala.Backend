@@ -1,4 +1,5 @@
 ﻿using Ala.Backend.Application.Abstractions.Infrastructure.Services.Identity;
+using Ala.Backend.Application.Common.Identity;
 using Ala.Backend.Domain.Identity;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
@@ -10,7 +11,9 @@ namespace Ala.Backend.Infrastructure.Services.Identity
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
 
-        public UserService(UserManager<User> userManager, SignInManager<User> signInManager)
+        public UserService(
+            UserManager<User> userManager,
+            SignInManager<User> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -55,82 +58,82 @@ namespace Ala.Backend.Infrastructure.Services.Identity
             return await _userManager.IsLockedOutAsync(user);
         }
 
-        public async Task<IdentityResult> CreateAsync(User user, string password)
+        public async Task<IdentityOperationResult> CreateAsync(User user, string password)
         {
             var result = await _userManager.CreateAsync(user, password);
-            return result;
+            return MapIdentityResult(result);
         }
 
-        public async Task<IdentityResult> UpdateAsync(User user)
+        public async Task<IdentityOperationResult> UpdateAsync(User user)
         {
             var result = await _userManager.UpdateAsync(user);
-            return result;
+            return MapIdentityResult(result);
         }
 
-        public async Task<IdentityResult> DeleteAsync(User user)
+        public async Task<IdentityOperationResult> DeleteAsync(User user)
         {
             var result = await _userManager.DeleteAsync(user);
-            return result;
+            return MapIdentityResult(result);
         }
 
-        public async Task<IdentityResult> AddToRoleAsync(User user, string roleName)
+        public async Task<IdentityOperationResult> AddToRoleAsync(User user, string roleName)
         {
             var result = await _userManager.AddToRoleAsync(user, roleName);
-            return result;
+            return MapIdentityResult(result);
         }
 
-        public async Task<IdentityResult> RemoveFromRoleAsync(User user, string roleName)
+        public async Task<IdentityOperationResult> RemoveFromRoleAsync(User user, string roleName)
         {
             var result = await _userManager.RemoveFromRoleAsync(user, roleName);
-            return result;
+            return MapIdentityResult(result);
         }
 
-        public async Task<IdentityResult> AddClaimAsync(User user, Claim claim)
+        public async Task<IdentityOperationResult> AddClaimAsync(User user, Claim claim)
         {
             var result = await _userManager.AddClaimAsync(user, claim);
-            return result;
+            return MapIdentityResult(result);
         }
 
-        public async Task<IdentityResult> RemoveClaimAsync(User user, Claim claim)
+        public async Task<IdentityOperationResult> RemoveClaimAsync(User user, Claim claim)
         {
             var result = await _userManager.RemoveClaimAsync(user, claim);
-            return result;
+            return MapIdentityResult(result);
         }
 
-        public async Task<IdentityResult> ResetPasswordAsync(User user, string token, string newPassword)
+        public async Task<IdentityOperationResult> ResetPasswordAsync(User user, string token, string newPassword)
         {
             var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
-            return result;
+            return MapIdentityResult(result);
         }
 
-        public async Task<IdentityResult> ChangePasswordAsync(User user, string currentPassword, string newPassword)
+        public async Task<IdentityOperationResult> ChangePasswordAsync(User user, string currentPassword, string newPassword)
         {
             var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
-            return result;
+            return MapIdentityResult(result);
         }
 
-        public async Task<IdentityResult> ConfirmEmailAsync(User user, string token)
+        public async Task<IdentityOperationResult> ConfirmEmailAsync(User user, string token)
         {
             var result = await _userManager.ConfirmEmailAsync(user, token);
-            return result;
+            return MapIdentityResult(result);
         }
 
-        public async Task<IdentityResult> SetLockoutEndDateAsync(User user, DateTimeOffset? lockoutEnd)
+        public async Task<IdentityOperationResult> SetLockoutEndDateAsync(User user, DateTimeOffset? lockoutEnd)
         {
             var result = await _userManager.SetLockoutEndDateAsync(user, lockoutEnd);
-            return result;
+            return MapIdentityResult(result);
         }
 
-        public async Task<IdentityResult> SetLockoutEnabledAsync(User user, bool enabled)
+        public async Task<IdentityOperationResult> SetLockoutEnabledAsync(User user, bool enabled)
         {
             var result = await _userManager.SetLockoutEnabledAsync(user, enabled);
-            return result;
+            return MapIdentityResult(result);
         }
 
-        public async Task<IdentityResult> ResetAccessFailedCountAsync(User user)
+        public async Task<IdentityOperationResult> ResetAccessFailedCountAsync(User user)
         {
             var result = await _userManager.ResetAccessFailedCountAsync(user);
-            return result;
+            return MapIdentityResult(result);
         }
 
         public async Task UpdateSecurityStampAsync(User user)
@@ -147,11 +150,60 @@ namespace Ala.Backend.Infrastructure.Services.Identity
         {
             return await _userManager.GeneratePasswordResetTokenAsync(user);
         }
-        public async Task<SignInResult> CheckPasswordSignInAsync(User user, string password, bool lockoutOnFailure)
+
+        public async Task<PasswordSignInCheckResult> CheckPasswordSignInAsync(User user, string password, bool lockoutOnFailure)
         {
-            return await _signInManager.CheckPasswordSignInAsync(user, password, lockoutOnFailure);
+            var result = await _signInManager.CheckPasswordSignInAsync(user, password, lockoutOnFailure);
+            return MapSignInResult(result);
         }
 
+        private static IdentityOperationResult MapIdentityResult(IdentityResult result)
+        {
+            if (result.Succeeded)
+                return IdentityOperationResult.Success();
+
+            var errors = result.Errors.Select(error => new IdentityOperationError
+            {
+                Code = error.Code,
+                Description = error.Description,
+                PropertyName = ResolvePropertyName(error.Code)
+            });
+
+            return IdentityOperationResult.Failed(errors);
+        }
+
+        private static PasswordSignInCheckResult MapSignInResult(SignInResult result)
+        {
+            if (result.Succeeded)
+                return PasswordSignInCheckResult.Success();
+
+            return PasswordSignInCheckResult.Failed(
+                isLockedOut: result.IsLockedOut,
+                isNotAllowed: result.IsNotAllowed,
+                requiresTwoFactor: result.RequiresTwoFactor);
+        }
+
+        private const string EmailPropertyName = "Email";
+        private const string UserNamePropertyName = "UserName";
+        private const string PasswordPropertyName = "Password";
+
+        private static string? ResolvePropertyName(string code)
+        {
+            return code switch
+            {
+                "DuplicateEmail" => EmailPropertyName,
+                "DuplicateUserName" => UserNamePropertyName,
+                "InvalidEmail" => EmailPropertyName,
+
+                "PasswordTooShort" => PasswordPropertyName,
+                "PasswordRequiresDigit" => PasswordPropertyName,
+                "PasswordRequiresUpper" => PasswordPropertyName,
+                "PasswordRequiresLower" => PasswordPropertyName,
+                "PasswordRequiresNonAlphanumeric" => PasswordPropertyName,
+                "PasswordRequiresUniqueChars" => PasswordPropertyName,
+
+                _ => null
+            };
+        }
     }
 }
-

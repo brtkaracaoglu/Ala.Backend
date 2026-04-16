@@ -1,5 +1,4 @@
-﻿using Ala.Backend.Application.Common.Enums;
-using Ala.Backend.Domain.Identity;
+﻿using Ala.Backend.Domain.Identity;
 
 namespace Ala.Backend.Application.Abstractions.Persistence.Repositories.Identity
 {

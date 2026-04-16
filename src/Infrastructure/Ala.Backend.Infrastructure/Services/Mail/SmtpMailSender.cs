@@ -1,4 +1,5 @@
 ﻿using Ala.Backend.Application.Abstractions.Infrastructure.Services.Mail;
+using Ala.Backend.Application.Common.Exceptions;
 using Ala.Backend.Infrastructure.Settings;
 using MailKit.Net.Smtp;
 using MailKit.Security;
@@ -55,10 +56,27 @@ namespace Ala.Backend.Infrastructure.Services.Mail
                     ? SecureSocketOptions.StartTls
                     : SecureSocketOptions.Auto;
 
-                if (_settings.IgnoreSslErrors || (_env?.IsDevelopment() ?? false))
+                // Kurumsal Güvenlik Kontrolü: Sertifika hatalarını yönet
+                smtp.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
                 {
-                    smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
-                }
+                    //  SSL/TLS sertifikasında hiçbir sorun yoksa bağlantıya izin ver
+                    if (sslPolicyErrors == System.Net.Security.SslPolicyErrors.None)
+                    {
+                        return true;
+                    }
+
+                    // Sertifika hatalıysa ancak appsettings üzerinden yoksayılması istenmişse
+                    // veya uygulama geliştirme (Development) ortamındaysa izin ver
+                    if (_settings.IgnoreSslErrors || _env.IsDevelopment())
+                    {
+                        _logger.LogWarning("SSL Sertifika hatası yoksayıldı. Hata kodları: {SslPolicyErrors}", sslPolicyErrors);
+                        return true;
+                    }
+
+                    // Aksi tüm durumlarda bağlantıyı reddet
+                    _logger.LogError("SSL Sertifika doğrulaması başarısız oldu. Hata kodları: {SslPolicyErrors}", sslPolicyErrors);
+                    return false;
+                };
 
                 await smtp.ConnectAsync(_settings.Host, _settings.Port, secureOption, cancellationToken);
                 await smtp.AuthenticateAsync(_settings.Username, _settings.Password, cancellationToken);
@@ -79,19 +97,18 @@ namespace Ala.Backend.Infrastructure.Services.Mail
                     _settings.Port,
                     _settings.Username);
 
-                // Eğer IntegrationException iki parametre almıyorsa, kendi exception sınıfınızı aşağıdaki gibi standartlaştırabilirsiniz
-                throw new Exception("hata", ex);
+                throw new IntegrationException("Genel gönderim Hatası");
             }
         }
 
         private MimeEntity CreateBodyWithEmbeddedImage(string htmlBody)
         {
             var builder = new BodyBuilder();
+            const string onlineLogo = "https://europowerenerji.com.tr/wp-content/uploads/2020/12/europower-logo.png";
 
             if (htmlBody.Contains("{{Logo}}"))
             {
-                // _env null ise doğrudan root klasörüne bakması için güvenlik eklendi
-                var webRootPath = _env?.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+                var webRootPath = _env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot");
                 var logoPath = Path.Combine(webRootPath, "images", "europower.png");
 
                 if (File.Exists(logoPath))
@@ -102,9 +119,8 @@ namespace Ala.Backend.Infrastructure.Services.Mail
                 }
                 else
                 {
-                    // Sadece log atıyoruz ve etiketi temizliyoruz ki mailde "{{Logo}}" yazısı görünmesin
-                    _logger.LogWarning("Logo dosyası sunucuda bulunamadı. Aranan Yol: {LogoPath}", logoPath);
-                    htmlBody = htmlBody.Replace("{{Logo}}", string.Empty);
+                    _logger.LogWarning("Logo bulunamadı. Online logo kullanılacak. Aranan Yol: {LogoPath}", logoPath);
+                    htmlBody = htmlBody.Replace("{{Logo}}", onlineLogo);
                 }
             }
 

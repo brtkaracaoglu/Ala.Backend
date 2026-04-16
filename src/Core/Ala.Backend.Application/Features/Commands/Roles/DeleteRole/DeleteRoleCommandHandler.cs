@@ -9,12 +9,12 @@ namespace Ala.Backend.Application.Features.Commands.Roles.DeleteRole
     public class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommandRequest, SuccessDetails>
     {
         private readonly IRoleService _roleService;
-        private readonly IUserService _userService; 
+        private readonly IUserService _userService;
 
         public DeleteRoleCommandHandler(IRoleService roleService, IUserService userService)
         {
             _roleService = roleService;
-            _userService = userService; 
+            _userService = userService;
         }
 
         public async Task<SuccessDetails> Handle(DeleteRoleCommandRequest request, CancellationToken cancellationToken)
