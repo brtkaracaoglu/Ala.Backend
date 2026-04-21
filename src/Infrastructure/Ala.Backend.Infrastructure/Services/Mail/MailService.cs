@@ -100,28 +100,5 @@ namespace Ala.Backend.Infrastructure.Services.Mail
 
             return await SendMailAsync(to, subject, body, true, cancellationToken);
         }
-
-        public async Task<SuccessDetails> SendAdminAlertAsync(string subject, string errorDetail, CancellationToken cancellationToken = default)
-        {
-            var to = !string.IsNullOrEmpty(_settings.AdminEmail) ? _settings.AdminEmail : "brtkaracaoglu@gmail.com";
-
-            string labelTitle = "Sistem Uyarı Bildirimi";
-
-            var replacements = new Dictionary<string, string>
-            {
-                { "MailTitle", labelTitle },
-                { "Subject", subject },
-                { "Date", DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss") },
-                { "ErrorDetail", errorDetail },
-                { "Label_Subject", "Konu" },
-                { "Label_Date", "Tarih" },
-                { "Label_ErrorDetail", "Hata Detayı" },
-                { "InfoMessage", "Bu mesaj sistem tarafından otomatik olarak oluşturulmuştur." }
-            };
-
-            string body = await _templateService.RenderAsync("BodyContent/admin-alert", replacements, cancellationToken);
-
-            return await SendMailAsync(new[] { to }, $"🚨 {labelTitle}: {subject}", body, true, cancellationToken);
-        }
     }
 }

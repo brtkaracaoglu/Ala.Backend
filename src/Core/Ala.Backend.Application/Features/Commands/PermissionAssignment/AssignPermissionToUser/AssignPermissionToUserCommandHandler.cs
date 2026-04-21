@@ -1,5 +1,5 @@
 ﻿using Ala.Backend.Application.Abstractions.Infrastructure.Services.Identity;
-using Ala.Backend.Application.Abstractions.Persistence;
+using Ala.Backend.Application.Abstractions.Persistence.Repositories.UnitOfWork;
 using Ala.Backend.Application.Common.Exceptions;
 using Ala.Backend.Application.Common.Responses;
 using Ala.Backend.Application.SystemMessages;

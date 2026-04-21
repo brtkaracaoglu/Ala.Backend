@@ -1,6 +1,6 @@
 ﻿using Ala.Backend.Domain.Common;
 
-namespace Ala.Backend.Application.Abstractions.Persistence
+namespace Ala.Backend.Application.Abstractions.Persistence.Repositories.Enitties
 {
     public interface IWriteRepository<TEntity, TId> where TEntity : BaseEntity<TId> where TId : notnull
     {

@@ -1,5 +1,5 @@
 ﻿using Ala.Backend.Domain.Identity;
-using Ala.Backend.Persistence.Extensions;
+using Ala.Backend.Persistence.Main.Extensions;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,7 +22,7 @@ namespace Ala.Backend.Persistence.Main.Context
             builder.ApplyConfigurationsFromAssembly(
                 typeof(MainDbContext).Assembly);
 
-            builder.ApplySoftDeleteQueryFilter();
+            builder.ApplyGlobalSoftDelete();
         }
     }
 }

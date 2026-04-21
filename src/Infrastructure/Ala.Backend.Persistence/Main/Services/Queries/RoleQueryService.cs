@@ -4,7 +4,7 @@ using Ala.Backend.Application.DTOs.Roles;
 using Ala.Backend.Persistence.Main.Context;
 using Microsoft.EntityFrameworkCore;
 
-namespace Ala.Backend.Persistence.Services.Queries
+namespace Ala.Backend.Persistence.Main.Services.Queries
 {
     public class RoleQueryService : IRoleQueryService
     {

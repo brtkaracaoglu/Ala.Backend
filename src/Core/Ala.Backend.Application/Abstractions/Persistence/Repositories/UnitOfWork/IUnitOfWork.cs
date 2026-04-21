@@ -1,6 +1,7 @@
-﻿using Ala.Backend.Domain.Common;
+﻿using Ala.Backend.Application.Abstractions.Persistence.Repositories.Enitties;
+using Ala.Backend.Domain.Common;
 
-namespace Ala.Backend.Application.Abstractions.Persistence
+namespace Ala.Backend.Application.Abstractions.Persistence.Repositories.UnitOfWork
 {
     public interface IUnitOfWork : IDisposable
     {

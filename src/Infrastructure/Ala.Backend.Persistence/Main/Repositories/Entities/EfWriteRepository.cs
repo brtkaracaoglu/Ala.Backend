@@ -1,9 +1,9 @@
-﻿using Ala.Backend.Application.Abstractions.Persistence;
+﻿using Ala.Backend.Application.Abstractions.Persistence.Repositories.Enitties;
 using Ala.Backend.Domain.Common;
 using Ala.Backend.Persistence.Main.Context;
 using Microsoft.EntityFrameworkCore;
 
-namespace Ala.Backend.Persistence.Repositories
+namespace Ala.Backend.Persistence.Main.Repositories.Entities
 {
     public class EfWriteRepository<TEntity, TId> : IWriteRepository<TEntity, TId> where TEntity : BaseEntity<TId>
         where TId : notnull

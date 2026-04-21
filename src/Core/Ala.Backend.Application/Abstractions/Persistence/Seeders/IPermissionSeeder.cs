@@ -1,4 +1,4 @@
-﻿namespace Ala.Backend.Application.Abstractions.Persistence.Service.Permission
+﻿namespace Ala.Backend.Application.Abstractions.Persistence.Seeders
 {
     public interface IPermissionSeeder
     {

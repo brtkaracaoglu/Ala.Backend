@@ -1,6 +1,6 @@
 ﻿using Ala.Backend.Application.Abstractions.Infrastructure.Services.Token;
-using Ala.Backend.Application.Abstractions.Persistence;
 using Ala.Backend.Application.Abstractions.Persistence.Repositories.Identity;
+using Ala.Backend.Application.Abstractions.Persistence.Repositories.UnitOfWork;
 using Ala.Backend.Domain.Identity;
 
 namespace Ala.Backend.Infrastructure.Services.Token

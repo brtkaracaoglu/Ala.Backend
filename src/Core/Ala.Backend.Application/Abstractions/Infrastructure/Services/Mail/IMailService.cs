@@ -11,6 +11,5 @@ namespace Ala.Backend.Application.Abstractions.Infrastructure.Services.Mail
         Task<SuccessDetails> SendEmailConfirmationMailAsync(string to, string fullName, string confirmationToken, CancellationToken cancellationToken = default);
         Task<SuccessDetails> SendInitialPasswordMailAsync(string to, string fullName, string userName, string password, CancellationToken cancellationToken = default);
         Task<SuccessDetails> SendResendConfirmationMailAsync(string to, string fullName, string confirmationToken, CancellationToken cancellationToken = default);
-        Task<SuccessDetails> SendAdminAlertAsync(string subject, string errorDetail, CancellationToken cancellationToken = default);
     }
 }

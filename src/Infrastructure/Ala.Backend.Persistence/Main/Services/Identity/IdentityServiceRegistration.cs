@@ -3,7 +3,7 @@ using Ala.Backend.Persistence.Main.Context;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Ala.Backend.Persistence.Main
+namespace Ala.Backend.Persistence.Main.Services.Identity
 {
     public static class IdentityServiceRegistration
     {

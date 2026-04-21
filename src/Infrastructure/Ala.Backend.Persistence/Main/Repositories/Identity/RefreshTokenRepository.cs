@@ -1,5 +1,4 @@
 ﻿using Ala.Backend.Application.Abstractions.Persistence.Repositories.Identity;
-using Ala.Backend.Application.Common.Enums;
 using Ala.Backend.Domain.Identity;
 using Ala.Backend.Persistence.Main.Context;
 using Microsoft.EntityFrameworkCore;

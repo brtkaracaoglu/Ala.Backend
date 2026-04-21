@@ -1,9 +1,10 @@
 ﻿using Ala.Backend.Application.Abstractions.Infrastructure.Services.Maintenance;
 using Ala.Backend.Application.Abstractions.Persistence.Repositories.Identity;
 using Ala.Backend.Application.DTOs.Maintenance;
+using Ala.Backend.Persistence.Main.Settings;
 using Microsoft.Extensions.Options;
 
-namespace Ala.Backend.Persistence.Services.Maintenance
+namespace Ala.Backend.Persistence.Main.Services.Maintenance
 {
     public sealed class AuthDataCleanupService : IAuthDataCleanupService
     {

@@ -2,27 +2,30 @@
 
 namespace Ala.Backend.Domain.Common
 {
-    public abstract class SoftDeleteEntity<TId> : TrackableEntity<TId>, ISoftDelete where TId : notnull
+    public abstract class SoftDeleteEntity<TId> : TrackableEntity<TId>, ISoftDelete
+        where TId : notnull
     {
         public bool IsDeleted { get; private set; }
-        public DateTime? DeletedAt { get; private set; }
-        public string? DeletedBy { get; private set; }
+        public DateTime? DeletedAtUtc { get; private set; }
+        public int? DeletedBy { get; private set; }
 
-        public void MarkAsDeleted(string deletedBy)
+        public void MarkAsDeleted(int? deletedBy, DateTime? deletedAtUtc = null)
         {
             if (IsDeleted)
                 return;
 
             IsDeleted = true;
-            DeletedAt = DateTime.UtcNow;
+            DeletedAtUtc = deletedAtUtc ?? DateTime.UtcNow;
             DeletedBy = deletedBy;
-
         }
 
         public void Restore()
         {
+            if (!IsDeleted)
+                return;
+
             IsDeleted = false;
-            DeletedAt = null;
+            DeletedAtUtc = null;
             DeletedBy = null;
         }
     }

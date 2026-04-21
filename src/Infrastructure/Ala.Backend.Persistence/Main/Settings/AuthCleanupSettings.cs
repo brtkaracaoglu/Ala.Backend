@@ -1,4 +1,4 @@
-﻿namespace Ala.Backend.Persistence.Services.Maintenance
+﻿namespace Ala.Backend.Persistence.Main.Settings
 {
     public sealed class AuthCleanupSettings
     {

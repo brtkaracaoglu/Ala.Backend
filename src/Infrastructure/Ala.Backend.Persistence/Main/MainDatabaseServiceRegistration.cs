@@ -1,5 +1,5 @@
-﻿using Ala.Backend.Persistence.Interceptors;
-using Ala.Backend.Persistence.Main.Context;
+﻿using Ala.Backend.Persistence.Main.Context;
+using Ala.Backend.Persistence.Main.Interceptors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,12 +8,14 @@ namespace Ala.Backend.Persistence.Main
 {
     public static class DatabaseServiceRegistration
     {
-        public static IServiceCollection AddPostgreSql(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddMainPostgreSql(this IServiceCollection services, IConfiguration configuration)
         {
-            var connectionString = configuration.GetConnectionString("PostgreSQL");
+            var connectionString = configuration.GetConnectionString("MainPostgreSQL")
+                ?? throw new InvalidOperationException("Connection string 'MainPostgreSQL' bulunamadı.");
 
             //Interceptor'ların DI Kaydı
-            services.AddScoped<AuditTrackableInterceptor>();
+            services.AddScoped<AuditableEntityInterceptor>();
+            services.AddScoped<SoftDeleteInterceptor>();
 
             services.AddDbContext<MainDbContext>((sp, options) =>
             {
@@ -30,7 +32,8 @@ namespace Ala.Backend.Persistence.Main
 
                 // Not: EF Core ekleme sırasına göre çalıştırır.
                 options.AddInterceptors(
-                    sp.GetRequiredService<AuditTrackableInterceptor>());
+                    sp.GetRequiredService<AuditableEntityInterceptor>(),
+                    sp.GetRequiredService<SoftDeleteInterceptor>());
 
                 options.EnableDetailedErrors();
 

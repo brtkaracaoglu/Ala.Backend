@@ -1,11 +1,11 @@
 ﻿using Ala.Backend.Application.Abstractions.Persistence.Service.Queries;
 using Ala.Backend.Application.Common.Responses;
 using Ala.Backend.Application.DTOs.Users;
-using Ala.Backend.Domain.Identity; 
+using Ala.Backend.Domain.Identity;
 using Ala.Backend.Persistence.Main.Context;
 using Microsoft.EntityFrameworkCore;
 
-namespace Ala.Backend.Persistence.Services.Queries
+namespace Ala.Backend.Persistence.Main.Services.Queries
 {
     public class UserQueryService : IUserQueryService
     {

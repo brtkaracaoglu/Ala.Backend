@@ -1,13 +1,14 @@
-﻿using Ala.Backend.Application.Abstractions.Persistence;
+﻿using Ala.Backend.Application.Abstractions.Persistence.Repositories.Enitties;
+using Ala.Backend.Application.Abstractions.Persistence.Repositories.UnitOfWork;
 using Ala.Backend.Domain.Common;
 using Ala.Backend.Persistence.Main.Context;
-using Ala.Backend.Persistence.Repositories;
+using Ala.Backend.Persistence.Main.Repositories.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace Ala.Backend.Persistence.UnitOfWork
+namespace Ala.Backend.Persistence.Main.Repositories.UnitOfWork
 {
-    public class EfUnitOfWork : IUnitOfWork
+    public sealed class EfUnitOfWork : IUnitOfWork
     {
         private readonly MainDbContext _context;
         private readonly Dictionary<string, object> _repositories = new();

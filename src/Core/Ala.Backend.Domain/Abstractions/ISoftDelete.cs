@@ -3,11 +3,10 @@
     public interface ISoftDelete
     {
         bool IsDeleted { get; }
-        DateTime? DeletedAt { get; }
-        string? DeletedBy { get; }
+        DateTime? DeletedAtUtc { get; }
+        int? DeletedBy { get; }
 
-        void MarkAsDeleted(string deletedBy);
+        void MarkAsDeleted(int? deletedBy, DateTime? deletedAtUtc = null);
         void Restore();
     }
 }
-

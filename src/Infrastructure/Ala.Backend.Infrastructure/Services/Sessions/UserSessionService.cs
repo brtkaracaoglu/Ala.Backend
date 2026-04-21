@@ -1,6 +1,6 @@
 ﻿using Ala.Backend.Application.Abstractions.Infrastructure.Services.Sessions;
-using Ala.Backend.Application.Abstractions.Persistence;
 using Ala.Backend.Application.Abstractions.Persistence.Repositories.Identity;
+using Ala.Backend.Application.Abstractions.Persistence.Repositories.UnitOfWork;
 using Ala.Backend.Application.Abstractions.Presentation;
 using Ala.Backend.Application.Common.Enums;
 using Ala.Backend.Domain.Identity;

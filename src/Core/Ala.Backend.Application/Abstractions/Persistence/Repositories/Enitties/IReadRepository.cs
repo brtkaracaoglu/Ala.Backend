@@ -3,7 +3,7 @@ using Ala.Backend.Application.Common.Responses;
 using Ala.Backend.Domain.Common;
 using System.Linq.Expressions;
 
-namespace Ala.Backend.Application.Abstractions.Persistence
+namespace Ala.Backend.Application.Abstractions.Persistence.Repositories.Enitties
 {
     public interface IReadRepository<TEntity, TId> where TEntity : BaseEntity<TId> where TId : notnull
     {

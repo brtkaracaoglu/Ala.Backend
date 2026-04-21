@@ -1,9 +1,9 @@
-﻿using Ala.Backend.Application.Abstractions.Persistence.Service.Permission;
+﻿using Ala.Backend.Application.Abstractions.Persistence.Seeders;
 using Ala.Backend.Domain.Identity;
 using Ala.Backend.Persistence.Main.Context;
 using Microsoft.EntityFrameworkCore;
 
-namespace Ala.Backend.Persistence.Services.Permissions
+namespace Ala.Backend.Persistence.Main.Seeders
 {
     public sealed class PermissionSeeder : IPermissionSeeder
     {

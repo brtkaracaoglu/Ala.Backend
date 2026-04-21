@@ -35,8 +35,7 @@ namespace Ala.Backend.Infrastructure
             services.AddScoped<IUserSessionService, UserSessionService>();
             services.AddScoped<IClientInfoParser, UaClientInfoParser>();
 
-            services.Configure<AuthCleanupSettings>(
-          configuration.GetSection(AuthCleanupSettings.SectionName));
+            services.Configure<AuthCleanupSettings>(configuration.GetSection(AuthCleanupSettings.SectionName));
 
             services.AddHostedService<AuthCleanupBackgroundService>();
             return services;

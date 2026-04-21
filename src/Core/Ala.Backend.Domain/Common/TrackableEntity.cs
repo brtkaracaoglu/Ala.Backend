@@ -2,7 +2,8 @@
 
 namespace Ala.Backend.Domain.Common
 {
-    public abstract class TrackableEntity<TId> : BaseEntity<TId>, ITrackable where TId : notnull
+    public abstract class TrackableEntity<TId> : BaseEntity<TId>, ITrackable
+        where TId : notnull
     {
         public int? CreatedBy { get; private set; }
         public DateTime CreatedAtUtc { get; private set; }
@@ -12,6 +13,9 @@ namespace Ala.Backend.Domain.Common
 
         public void SetCreated(int? userId, DateTime createdAtUtc)
         {
+            if (CreatedAtUtc != default)
+                return;
+
             CreatedBy = userId;
             CreatedAtUtc = createdAtUtc;
         }

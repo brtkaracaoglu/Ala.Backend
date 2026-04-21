@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ala.Backend.Persistence.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    [Migration("20260413073530_MainDb")]
+    [Migration("20260421175412_MainDb")]
     partial class MainDb
     {
         /// <inheritdoc />

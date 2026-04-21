@@ -1,13 +1,12 @@
-﻿using Ala.Backend.Application.Abstractions.Persistence;
+﻿using Ala.Backend.Application.Abstractions.Persistence.Repositories.Enitties;
 using Ala.Backend.Application.Common.Requests;
 using Ala.Backend.Application.Common.Responses;
 using Ala.Backend.Domain.Common;
 using Ala.Backend.Persistence.Main.Context;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Linq.Expressions;
 
-namespace Ala.Backend.Persistence.Repositories
+namespace Ala.Backend.Persistence.Main.Repositories.Entities
 {
     public class EfReadRepository<TEntity, TId> : IReadRepository<TEntity, TId> where TEntity : BaseEntity<TId> where TId : notnull
     {

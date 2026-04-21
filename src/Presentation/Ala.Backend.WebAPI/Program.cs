@@ -1,5 +1,5 @@
 using Ala.Backend.Application;
-using Ala.Backend.Application.Abstractions.Persistence.Service.Permission;
+using Ala.Backend.Application.Abstractions.Persistence.Seeders;
 using Ala.Backend.Infrastructure;
 using Ala.Backend.Persistence;
 using Ala.Backend.WebAPI;
